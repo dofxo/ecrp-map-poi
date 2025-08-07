@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
-import { ImageOverlay, MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import {useRef, useState} from 'react';
+import {ImageOverlay, MapContainer, Marker, Popup, useMapEvents} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import toast from "react-hot-toast";
-import { Button, Input, Modal, Select } from "antd";
-import type { Poi } from "../App.tsx";
-import { formatDateDDMMMYYYY } from "../helper/formatDate.ts";
-import { dealerTypeKey, dealerTypes } from "../data/dealerTypes.ts";
+import {Button, Input, Modal, Select} from "antd";
+import type {Poi} from "../App.tsx";
+import {formatDateDDMMMYYYY} from "../helper/formatDate.ts";
+import {dealerTypeKey, dealerTypes} from "../data/dealerTypes.ts";
 
 interface NewPOIState {
     dealerName: string;
@@ -14,15 +14,17 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFilterDealerType}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
     setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
+    filterDealerType: dealerTypeKey | 'all',
+    setFilterDealerType: React.Dispatch<React.SetStateAction<dealerTypeKey | 'all'>>
 }) => {
     const mapRef = useRef(null);
 
-    const [{ dealerName, dealerType, adderName, latLng }, setNewPOI] = useState<NewPOIState>({
+    const [{dealerName, dealerType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
         dealerName: "",
         dealerType: "drug",
         adderName: "",
@@ -83,7 +85,7 @@ const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
                 dealerType: e
             }));
         } else {
-            const { name, value } = e.target;
+            const {name, value} = e.target;
             setNewPOI(prev => ({
                 ...prev,
                 [name]: value
@@ -122,7 +124,7 @@ const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
     const PoiMarkers = () => {
         return (
             <>
-                {poiList.map((poi, index) => {
+                {poiList.filter(poi => filterDealerType === 'all' || poi.dealerType === filterDealerType).map((poi, index) => {
                     const dealerType = poi.dealerType as dealerTypeKey;
                     const emojiIcon = L.divIcon({
                         html: `<div style="font-size: 24px">${dealerTypes[dealerType]?.icon}</div>`,
@@ -184,19 +186,19 @@ const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
                     minZoom={-2}
                     maxZoom={2}
                     crs={L.CRS.Simple}
-                    style={{ height: '100%', width: '100%' }}
+                    style={{height: '100%', width: '100%'}}
                     maxBounds={bounds}
                     maxBoundsViscosity={1.0}
                     whenCreated={(mapInstance) => {
-                        mapInstance.fitBounds(bounds, { padding: [0, 0] });
+                        mapInstance.fitBounds(bounds, {padding: [0, 0]});
                     }}
                 >
                     <ImageOverlay
                         url={imageUrl}
                         bounds={bounds}
                     />
-                    <MapClickHandler />
-                    <PoiMarkers />
+                    <MapClickHandler/>
+                    <PoiMarkers/>
                 </MapContainer>
 
                 {/* Add POI Modal */}
@@ -263,14 +265,16 @@ const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
                     onOk={handleDelete}
                     onCancel={handleCancelDelete}
                     okText="Delete"
-                    okButtonProps={{ danger: true }}
+                    okButtonProps={{danger: true}}
                     cancelText="Cancel"
                 >
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiToDelete !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded">
                             <p><strong>Dealer:</strong> {poiList[poiToDelete].dealerName}</p>
-                            <p><strong>Type:</strong> {dealerTypes[poiList[poiToDelete].dealerType as dealerTypeKey]?.name}</p>
+                            <p>
+                                <strong>Type:</strong> {dealerTypes[poiList[poiToDelete].dealerType as dealerTypeKey]?.name}
+                            </p>
                         </div>
                     )}
                 </Modal>
