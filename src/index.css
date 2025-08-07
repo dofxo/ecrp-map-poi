@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+:root {
+    --bg-color: #EDF2F9;
+    --text-color: #344050;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+}
+
+.leaflet-container {
+    background-color: var(--bg-color) !important;
+}
