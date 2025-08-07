@@ -1,73 +1,95 @@
-import {useRef, useState} from 'react';
-import {ImageOverlay, MapContainer, useMapEvents} from 'react-leaflet';
+import { useRef, useState } from 'react';
+import { ImageOverlay, MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import toast from "react-hot-toast";
-import {Input, Modal, Select} from "antd";
-import {dealerTypes} from "../data/dealerTypes.ts";
-import type {Poi} from "../App.tsx";
+import { Button, Input, Modal, Select } from "antd";
+import type { Poi } from "../App.tsx";
+import { formatDateDDMMMYYYY } from "../helper/formatDate.ts";
+import { dealerTypeKey, dealerTypes } from "../data/dealerTypes.ts";
 
+interface NewPOIState {
+    dealerName: string;
+    dealerType: dealerTypeKey;
+    adderName: string;
+    latLng: [number, number];
+}
 
-const Map = ({isClick, setIsClick, poiList, setPoiList}: {
+const Map = ({ isClick, setIsClick, poiList, setPoiList }: {
     isClick: boolean,
-    setIsClick: React.Dispatch<React.SetStateAction<boolean>>
+    setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
     setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
 }) => {
     const mapRef = useRef(null);
 
-    const [{dealerName, dealerType, adderName, latLng}, setNewPOI] = useState({
+    const [{ dealerName, dealerType, adderName, latLng }, setNewPOI] = useState<NewPOIState>({
         dealerName: "",
-        dealerType: "drug_dealer",
+        dealerType: "drug",
         adderName: "",
-        latLng: []
+        latLng: [0, 0]
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [poiToDelete, setPoiToDelete] = useState<number | null>(null);
 
     const showModal = () => {
         setIsModalOpen(true);
     };
 
+    const showDeleteModal = (index: number) => {
+        setPoiToDelete(index);
+        setIsDeleteModalOpen(true);
+    };
+
     const handleOk = () => {
+        if (!dealerName || !adderName) return toast.error("Please fill in all fields");
 
-        if (!dealerName || !dealerType || !adderName) return toast.error("Please fill in all fields")
-
-        const poiDetails = {dealerType, dealerName, adderName, latLng}
-        setPoiList(prev => [...prev, poiDetails])
+        const todayDate = formatDateDDMMMYYYY(new Date());
+        const poiDetails: Poi = {
+            dealerType,
+            dealerName,
+            adderName,
+            latLng,
+            todayDate,
+        };
+        setPoiList(prev => [...prev, poiDetails]);
 
         setIsModalOpen(false);
         setIsClick(false);
 
-        toast.success("POI saved!")
-        //TODO: add promise
-        // toast.promise(
-        //     // add promise,
-        //     {
-        //         loading: 'Adding POI...',
-        //         success: <b>POI saved!</b>,
-        //         error: <b>Could not save.</b>,
-        //     }
-        // );
-
+        toast.success("POI saved!");
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | string) => {
+    const handleDelete = () => {
+        if (poiToDelete !== null) {
+            const filteredPoiList = poiList.filter((_, i) => i !== poiToDelete);
+            setPoiList(filteredPoiList);
+            toast.success("POI removed!");
+        }
+        setIsDeleteModalOpen(false);
+        setPoiToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setIsDeleteModalOpen(false);
+        setPoiToDelete(null);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | dealerTypeKey) => {
         if (typeof e === 'string') {
-            // Handle Select component case
             setNewPOI(prev => ({
                 ...prev,
                 dealerType: e
             }));
         } else {
-            // Handle Input component case
-            const {name, value} = e.target;
+            const { name, value } = e.target;
             setNewPOI(prev => ({
                 ...prev,
                 [name]: value
-            }));
+            } as NewPOIState));
         }
     };
-
 
     const handleCancel = () => {
         setIsModalOpen(false);
@@ -75,36 +97,76 @@ const Map = ({isClick, setIsClick, poiList, setPoiList}: {
     };
 
     const imageUrl = '/images/map.png';
-
-    // Image dimensions
     const imageWidth = 5000;
     const imageHeight = 5000;
-
     const bounds = [
         [0, 0],
         [imageHeight, imageWidth]
     ];
 
-    const MapClickHandler = ({setIsClick}: {
-        setIsClick: React.Dispatch<React.SetStateAction<boolean>>
-    }) => {
-        if (!isClick) return
+    const MapClickHandler = () => {
         useMapEvents({
             click: (e) => {
-                showModal()
-                setNewPOI(prev => ({
-                    ...prev,
-                    latLng: [e.latlng.lat, e.latlng.lng]
-                }))
+                if (isClick) {
+                    showModal();
+                    setNewPOI(prev => ({
+                        ...prev,
+                        latLng: [e.latlng.lat, e.latlng.lng]
+                    }));
+                }
             }
         });
         return null;
-    }
+    };
 
+    const PoiMarkers = () => {
+        return (
+            <>
+                {poiList.map((poi, index) => {
+                    const dealerType = poi.dealerType as dealerTypeKey;
+                    const emojiIcon = L.divIcon({
+                        html: `<div style="font-size: 24px">${dealerTypes[dealerType]?.icon}</div>`,
+                        className: 'emoji-marker',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12],
+                        popupAnchor: [0, -12]
+                    });
+
+                    return (
+                        <Marker
+                            key={index}
+                            position={[poi.latLng[0], poi.latLng[1]]}
+                            icon={emojiIcon}
+                        >
+                            <Popup>
+                                <div className="p-2">
+                                    <h3><span className='font-bold'>Dealer name:</span> {poi.dealerName}</h3>
+                                    <p><span className='font-bold'>Type: </span>
+                                        {dealerTypes[dealerType]?.icon} {dealerTypes[dealerType]?.name}
+                                    </p>
+                                    <p><span className='font-bold'>Added by:</span> {poi.adderName}</p>
+                                    <p><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
+                                    <Button
+                                        className="text-sm w-full"
+                                        type="primary"
+                                        danger
+                                        onClick={() => showDeleteModal(index)}
+                                        icon={<span>🗑️</span>}
+                                    >
+                                        remove poi
+                                    </Button>
+                                </div>
+                            </Popup>
+                        </Marker>
+                    );
+                })}
+            </>
+        );
+    };
 
     return (
         <div style={{
-            height: '100vh',
+            height: '100%',
             width: '100%',
             display: 'flex',
             justifyContent: 'center',
@@ -113,7 +175,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList}: {
         }}>
             <div style={{
                 width: '100%',
-                height: '100vh',
+                height: '90vh',
             }}>
                 <MapContainer
                     ref={mapRef}
@@ -122,84 +184,95 @@ const Map = ({isClick, setIsClick, poiList, setPoiList}: {
                     minZoom={-2}
                     maxZoom={2}
                     crs={L.CRS.Simple}
-                    style={{height: '100%', width: '100%'}}
+                    style={{ height: '100%', width: '100%' }}
                     maxBounds={bounds}
                     maxBoundsViscosity={1.0}
                     whenCreated={(mapInstance) => {
-                        mapInstance.fitBounds(bounds, {padding: [0, 0]});
+                        mapInstance.fitBounds(bounds, { padding: [0, 0] });
                     }}
                 >
                     <ImageOverlay
                         url={imageUrl}
                         bounds={bounds}
                     />
-                    <MapClickHandler setIsClick={setIsClick}/>
+                    <MapClickHandler />
+                    <PoiMarkers />
                 </MapContainer>
 
+                {/* Add POI Modal */}
                 <Modal
                     title="Point of interest details"
-                    closable={{'aria-label': 'Custom Close Button'}}
                     open={isModalOpen}
                     onOk={handleOk}
                     onCancel={handleCancel}
+                    closable
                 >
-                    <div className="flex flex-col gap-2"
-                    >
+                    <div className="flex flex-col gap-2">
                         <div className="space-y-4">
-                            {/* Adder Name Input */}
                             <div className="flex flex-col gap-1">
                                 <label htmlFor="adder-name" className="text-sm font-medium text-gray-700">
                                     Added By
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        name="adderName"
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Cole Lawless"
-                                        className="w-full"
-                                    />
-                                </div>
+                                <Input
+                                    name="adderName"
+                                    onChange={handleInputChange}
+                                    placeholder="e.g. Cole Lawless"
+                                    className="w-full"
+                                />
                             </div>
 
-                            {/* Dealer Name Input */}
                             <div className="flex flex-col gap-1">
                                 <label htmlFor="dealer-name" className="text-sm font-medium text-gray-700">
                                     Dealer Name
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        name="dealerName"
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Matthews"
-                                        className="w-full"
-                                    />
-                                </div>
+                                <Input
+                                    name="dealerName"
+                                    onChange={handleInputChange}
+                                    placeholder="e.g. Matthews"
+                                    className="w-full"
+                                />
                             </div>
 
-                            {/* Icon Selection */}
                             <div className="flex flex-col gap-1">
                                 <label htmlFor="icon-select" className="text-sm font-medium text-gray-700">
                                     Dealer Type
                                 </label>
-                                <div className="flex items-center gap-2">
-                                    <Select
-                                        id="icon-select"
-                                        onChange={handleInputChange}
-                                        defaultValue="drug_dealer"
-                                        options={dealerTypes.map((item) => ({
-                                            value: item.value,
-                                            label: (
-                                                <span>
-                                                {item.icon} {item.name}
-                                                </span>
-                                            ),
-                                        }))}
-                                        className="w-full"
-                                    />
-                                </div>
+                                <Select
+                                    id="icon-select"
+                                    onChange={(value: dealerTypeKey) => handleInputChange(value)}
+                                    defaultValue="drug"
+                                    options={(Object.keys(dealerTypes) as dealerTypeKey[]).map((key) => ({
+                                        value: key,
+                                        label: (
+                                            <span>
+                                                {dealerTypes[key].icon} {dealerTypes[key].name}
+                                            </span>
+                                        ),
+                                    }))}
+                                    className="w-full"
+                                />
                             </div>
                         </div>
                     </div>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    title="Confirm Delete"
+                    open={isDeleteModalOpen}
+                    onOk={handleDelete}
+                    onCancel={handleCancelDelete}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Cancel"
+                >
+                    <p>Are you sure you want to delete this point of interest?</p>
+                    {poiToDelete !== null && (
+                        <div className="mt-4 p-2 bg-gray-100 rounded">
+                            <p><strong>Dealer:</strong> {poiList[poiToDelete].dealerName}</p>
+                            <p><strong>Type:</strong> {dealerTypes[poiList[poiToDelete].dealerType as dealerTypeKey]?.name}</p>
+                        </div>
+                    )}
                 </Modal>
             </div>
         </div>

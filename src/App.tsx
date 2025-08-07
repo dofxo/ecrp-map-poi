@@ -9,6 +9,7 @@ export interface Poi {
     adderName: string,
     latLng: number[],
     dealerType: string
+    todayDate: string
 }
 
 const App = () => {

@@ -12,3 +12,18 @@ body {
 .leaflet-container {
     background-color: var(--bg-color) !important;
 }
+
+.emoji-marker {
+    background: transparent;
+    border: none;
+    text-align: center;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+
+}
+.emoji-marker:hover {
+    transform: scale(1.2);
+}
