@@ -15,7 +15,7 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory}: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory,isDevMode}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
@@ -23,6 +23,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
     filterDealerType: poiTypeKey | 'all',
     setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
     showTerritory: boolean
+    isDevMode: boolean
 }) => {
     const mapRef = useRef(null);
 
@@ -57,6 +58,14 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
             latLng,
             todayDate,
         };
+
+        if (isDevMode) {
+            navigator.clipboard.writeText(JSON.stringify(poiDetails, null, 2))
+                .then(() => {
+                    alert('POI copied to clipboard!')
+                })
+        }
+
         setPoiList(prev => [...prev, poiDetails]);
 
         setIsModalOpen(false);
@@ -201,7 +210,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                     />
                     <MapClickHandler/>
                     <PoiMarkers/>
-                    {showTerritory && <Territories/>}
+                    {showTerritory && <Territories isDevMode={isDevMode}/>}
                 </MapContainer>
 
                 {/* Add POI Modal */}

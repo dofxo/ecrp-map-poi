@@ -14,6 +14,8 @@ export interface Poi {
     todayDate: string
 }
 
+const isDevMode = true;
+
 const App = () => {
 
     const [isClick, setIsClick] = useState(false)
@@ -26,7 +28,7 @@ const App = () => {
     return (
         <main>
             <Header showTerritory={showTerritory}  setShowTerritory={setShowTerritory} filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} setIsClick={setIsClick} isClick={isClick}/>
-            <Map showTerritory={showTerritory} filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} poiList={poiList} setPoiList={setPoiList} setIsClick={setIsClick} isClick={isClick}/>
+            <Map isDevMode={isDevMode} showTerritory={showTerritory} filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} poiList={poiList} setPoiList={setPoiList} setIsClick={setIsClick} isClick={isClick}/>
             <Toaster
                 position="top-center"
                 reverseOrder={false}

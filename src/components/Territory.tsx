@@ -1,7 +1,7 @@
-import { LayerGroup, Rectangle, Popup, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import {LayerGroup, Popup, Rectangle, useMapEvents} from 'react-leaflet';
+import {useState} from 'react';
 import PaintControls from './PaintControls';
-import { defaultTerritories } from "../data/gangTerritories/gangTerritories.ts";
+import {defaultTerritories} from "../data/gangTerritories/gangTerritories.ts";
 
 export interface PixelTerritory {
     id: string;
@@ -23,9 +23,8 @@ export interface PaintMode {
     mode: PaintModeType;
 }
 
-const isDevMode = true;
 
-const Territories = () => {
+const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     const [territories, setTerritories] = useState<PixelTerritory[]>(defaultTerritories);
     const [paintMode, setPaintMode] = useState<PaintMode>({
         active: false,
@@ -61,7 +60,7 @@ const Territories = () => {
         click: (e) => {
             if (!paintMode.active || !selectedTerritoryId) return;
 
-            const { lat, lng } = e.latlng;
+            const {lat, lng} = e.latlng;
             const snappedLat = Math.floor(lat / paintMode.boxSize) * paintMode.boxSize;
             const snappedLng = Math.floor(lng / paintMode.boxSize) * paintMode.boxSize;
 
@@ -124,7 +123,7 @@ const Territories = () => {
     };
 
     const stopPainting = () => {
-        setPaintMode(prev => ({ ...prev, active: false }));
+        setPaintMode(prev => ({...prev, active: false}));
         setSelectedTerritoryId(null);
         setPopupPosition(null);
     };
@@ -180,7 +179,7 @@ const Territories = () => {
                         />
                     ))}
 
-                    {selectedTerritoryId == territory.id && popupPosition && paintMode.mode !== 'edit' &&(
+                    {selectedTerritoryId == territory.id && popupPosition && paintMode.mode !== 'edit' && (
                         <Popup
                             position={popupPosition}
                             onClose={() => {
@@ -191,11 +190,11 @@ const Territories = () => {
                             <div>
                                 <h3
                                     className="text-center text-2xl font-bold"
-                                    style={{ color: territory.color }}
+                                    style={{color: territory.color}}
                                 >
                                     {territory.name}
                                 </h3>
-                                <hr />
+                                <hr/>
                                 <p><strong>Gang:</strong> {territory.gang}</p>
                                 <p><strong>Extra Details:</strong> <span>extra details</span></p>
                                 <button
