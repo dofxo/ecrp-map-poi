@@ -1,14 +1,14 @@
 import {Button} from "antd";
 import toast from "react-hot-toast";
 import {PlusOutlined} from "@ant-design/icons";
-import {dealerTypeKey} from "../data/dealerTypes.ts";
+import {poiTypeKey} from "../data/poiTypes.ts";
 import Filter from "./Filter.tsx";
 
 const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
-    filterDealerType: dealerTypeKey | 'all',
-    setFilterDealerType: React.Dispatch<React.SetStateAction<dealerTypeKey | 'all'>>
+    filterDealerType: poiTypeKey | 'all',
+    setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
 
 }) => {
 

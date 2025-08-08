@@ -2,22 +2,23 @@ import Map from "./components/Map.tsx";
 import Header from "./components/Header.tsx";
 import {useState} from "react";
 import {Toaster} from "react-hot-toast";
-import {dealerTypeKey} from "./data/dealerTypes.ts";
+import {poiTypeKey} from "./data/poiTypes.ts";
+import {dropPoints} from "./data/dropPoints.ts";
 
 
 export interface Poi {
-    dealerName: string,
+    poiName: string,
     adderName: string,
     latLng: number[],
-    dealerType: string
+    poiType: poiTypeKey,
     todayDate: string
 }
 
 const App = () => {
 
     const [isClick, setIsClick] = useState(false)
-    const [poiList, setPoiList] = useState<Poi[]>([])
-    const [filterDealerType, setFilterDealerType] = useState<dealerTypeKey | 'all'>('all');
+    const [poiList, setPoiList] = useState<Poi[]>([...dropPoints])
+    const [filterDealerType, setFilterDealerType] = useState<poiTypeKey | 'all'>('all');
 
 
 

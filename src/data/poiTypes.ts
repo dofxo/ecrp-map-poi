@@ -1,12 +1,18 @@
-export type dealerTypeKey = 'drug' | 'businessman' | 'car' | 'restaurant' | 'police';
+export type poiTypeKey = 'drug' | 'businessman' | 'car' | 'restaurant' | 'police' | 'dropPoints';
 
 export interface DealerType {
     name: string;
     icon: string;
-    value: dealerTypeKey;
+    value: poiTypeKey;
 }
 
-export const dealerTypes: Record<dealerTypeKey, DealerType> = {
+export const poiTypes: Record<poiTypeKey, DealerType> = {
+    dropPoints: {
+        icon: "🗳️",
+        name: "Drop Points",
+        value: "dropPoints"
+    }
+    ,
     drug: {
         name: "Drug dealer",
         icon: "💊",
@@ -31,5 +37,5 @@ export const dealerTypes: Record<dealerTypeKey, DealerType> = {
         name: "Police",
         icon: "🚓",
         value: "police"
-    }
+    },
 };

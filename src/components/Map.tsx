@@ -5,29 +5,30 @@ import toast from "react-hot-toast";
 import {Button, Input, Modal, Select} from "antd";
 import type {Poi} from "../App.tsx";
 import {formatDateDDMMMYYYY} from "../helper/formatDate.ts";
-import {dealerTypeKey, dealerTypes} from "../data/dealerTypes.ts";
+import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
+import Territories from "./Territory.tsx";
 
 interface NewPOIState {
-    dealerName: string;
-    dealerType: dealerTypeKey;
+    poiName: string;
+    poiType: poiTypeKey;
     adderName: string;
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFilterDealerType}: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
     setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
-    filterDealerType: dealerTypeKey | 'all',
-    setFilterDealerType: React.Dispatch<React.SetStateAction<dealerTypeKey | 'all'>>
+    filterDealerType: poiTypeKey | 'all',
+    setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
 }) => {
     const mapRef = useRef(null);
 
-    const [{dealerName, dealerType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
-        dealerName: "",
-        dealerType: "drug",
+    const [{poiName, poiType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
+        poiType: "drug",
+        poiName: "",
         latLng: [0, 0]
     });
 
@@ -45,12 +46,12 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
     };
 
     const handleOk = () => {
-        if (!dealerName || !adderName) return toast.error("Please fill in all fields");
+        if (!poiName || !adderName) return toast.error("Please fill in all fields");
 
         const todayDate = formatDateDDMMMYYYY(new Date());
         const poiDetails: Poi = {
-            dealerType,
-            dealerName,
+            poiType,
+            poiName,
             adderName,
             latLng,
             todayDate,
@@ -78,11 +79,11 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
         setPoiToDelete(null);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | dealerTypeKey) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | poiTypeKey) => {
         if (typeof e === 'string') {
             setNewPOI(prev => ({
                 ...prev,
-                dealerType: e
+                poiType: e
             }));
         } else {
             const {name, value} = e.target;
@@ -124,10 +125,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
     const PoiMarkers = () => {
         return (
             <>
-                {poiList.filter(poi => filterDealerType === 'all' || poi.dealerType === filterDealerType).map((poi, index) => {
-                    const dealerType = poi.dealerType as dealerTypeKey;
+                {poiList.filter(poi => filterDealerType === 'all' || poi.poiType === filterDealerType).map((poi, index) => {
+                    const dealerType = poi.poiType as poiTypeKey;
                     const emojiIcon = L.divIcon({
-                        html: `<div style="font-size: 24px">${dealerTypes[dealerType]?.icon}</div>`,
+                        html: `<div style="font-size: 24px">${poiTypes[dealerType]?.icon}</div>`,
                         className: 'emoji-marker',
                         iconSize: [24, 24],
                         iconAnchor: [12, 12],
@@ -142,9 +143,9 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
                         >
                             <Popup>
                                 <div className="p-2">
-                                    <h3><span className='font-bold'>Dealer name:</span> {poi.dealerName}</h3>
-                                    <p><span className='font-bold'>Type: </span>
-                                        {dealerTypes[dealerType]?.icon} {dealerTypes[dealerType]?.name}
+                                    <h3><span className='font-bold'>POI name:</span> {poi.poiName}</h3>
+                                    <p><span className='font-bold'>POI type: </span>
+                                        {poiTypes[dealerType]?.icon} {poiTypes[dealerType]?.name}
                                     </p>
                                     <p><span className='font-bold'>Added by:</span> {poi.adderName}</p>
                                     <p><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
@@ -199,6 +200,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
                     />
                     <MapClickHandler/>
                     <PoiMarkers/>
+                    <Territories />
                 </MapContainer>
 
                 {/* Add POI Modal */}
@@ -225,10 +227,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
 
                             <div className="flex flex-col gap-1">
                                 <label htmlFor="dealer-name" className="text-sm font-medium text-gray-700">
-                                    Dealer Name
+                                    POI Name
                                 </label>
                                 <Input
-                                    name="dealerName"
+                                    name="poiName"
                                     onChange={handleInputChange}
                                     placeholder="e.g. Matthews"
                                     className="w-full"
@@ -237,17 +239,17 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
 
                             <div className="flex flex-col gap-1">
                                 <label htmlFor="icon-select" className="text-sm font-medium text-gray-700">
-                                    Dealer Type
+                                    POI Type
                                 </label>
                                 <Select
                                     id="icon-select"
-                                    onChange={(value: dealerTypeKey) => handleInputChange(value)}
+                                    onChange={(value: poiTypeKey) => handleInputChange(value)}
                                     defaultValue="drug"
-                                    options={(Object.keys(dealerTypes) as dealerTypeKey[]).map((key) => ({
+                                    options={(Object.keys(poiTypes) as poiTypeKey[]).map((key) => ({
                                         value: key,
                                         label: (
                                             <span>
-                                                {dealerTypes[key].icon} {dealerTypes[key].name}
+                                                {poiTypes[key].icon} {poiTypes[key].name}
                                             </span>
                                         ),
                                     }))}
@@ -271,9 +273,9 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, setFil
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiToDelete !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded">
-                            <p><strong>Dealer:</strong> {poiList[poiToDelete].dealerName}</p>
+                            <p><strong>Dealer:</strong> {poiList[poiToDelete].poiName}</p>
                             <p>
-                                <strong>Type:</strong> {dealerTypes[poiList[poiToDelete].dealerType as dealerTypeKey]?.name}
+                                <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
                             </p>
                         </div>
                     )}
