@@ -19,13 +19,14 @@ const App = () => {
     const [isClick, setIsClick] = useState(false)
     const [poiList, setPoiList] = useState<Poi[]>([...dropPoints])
     const [filterDealerType, setFilterDealerType] = useState<poiTypeKey | 'all'>('all');
+    const [showTerritory, setShowTerritory] = useState<boolean>(true);
 
 
 
     return (
         <main>
-            <Header filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} setIsClick={setIsClick} isClick={isClick}/>
-            <Map filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} poiList={poiList} setPoiList={setPoiList} setIsClick={setIsClick} isClick={isClick}/>
+            <Header showTerritory={showTerritory}  setShowTerritory={setShowTerritory} filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} setIsClick={setIsClick} isClick={isClick}/>
+            <Map showTerritory={showTerritory} filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType} poiList={poiList} setPoiList={setPoiList} setIsClick={setIsClick} isClick={isClick}/>
             <Toaster
                 position="top-center"
                 reverseOrder={false}

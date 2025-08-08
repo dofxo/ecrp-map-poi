@@ -15,13 +15,14 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType }: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
     setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
     filterDealerType: poiTypeKey | 'all',
     setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
+    showTerritory: boolean
 }) => {
     const mapRef = useRef(null);
 
@@ -200,7 +201,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType }: {
                     />
                     <MapClickHandler/>
                     <PoiMarkers/>
-                    <Territories />
+                    {showTerritory && <Territories/>}
                 </MapContainer>
 
                 {/* Add POI Modal */}
