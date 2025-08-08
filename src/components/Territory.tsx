@@ -1,4 +1,4 @@
-import { LayerGroup, Rectangle, Tooltip, Marker, useMapEvents } from 'react-leaflet';
+import { LayerGroup, Rectangle, Tooltip, Marker, useMapEvents, Popup } from 'react-leaflet';
 import { useState } from 'react';
 import PaintControls from './PaintControls';
 import { defaultTerritories } from "../data/gangTerritories/gangTerritories.ts";
@@ -151,14 +151,21 @@ const Territories = () => {
         setSelectedTerritoryId(newId);
     };
 
+    // <-- Added: Calculate center of territory by averaging all boxes' bounds points
+    const getTerritoryCenter = (territory: PixelTerritory): [number, number] => {
+        const allPoints = territory.boxes.flatMap(box => box.bounds);
+        if (allPoints.length === 0) return [0, 0];
+        const lats = allPoints.map(p => p[0]);
+        const lngs = allPoints.map(p => p[1]);
+        const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+        const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
+        return [avgLat, avgLng];
+    };
+
     return (
         <>
             {territories.map((territory) => {
                 const middleBoxIndex = Math.floor(territory.boxes.length / 2);
-                const middlePos: [number, number] = [
-                    territory.boxes[middleBoxIndex].bounds[0][0],
-                    territory.boxes[middleBoxIndex].bounds[0][1]
-                ];
 
                 return (
                     <LayerGroup key={territory.id}>
@@ -181,37 +188,32 @@ const Territories = () => {
                             />
                         ))}
 
-                        {/* Invisible marker to hold the tooltip */}
                         {territory.boxes.length > 0 && (
-                            <Marker position={middlePos} opacity={0}>
-                                <Tooltip
-                                    direction="center"
-                                    permanent
-                                    className="gang-tooltip !z-[10000000000]"
-                                >
-                                    <div className="text-center">
-                                        <strong>{territory.name}</strong>
-                                        <br />
-                                        {territory.gang}
-                                        <div className="mt-1">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedTerritoryId(
-                                                        selectedTerritoryId === territory.id ? null : territory.id
-                                                    );
-                                                }}
-                                                className={`text-xs p-1 mb-1 w-full ${
-                                                    selectedTerritoryId === territory.id
-                                                        ? 'bg-blue-500 text-white'
-                                                        : 'bg-gray-200'
-                                                }`}
-                                            >
-                                                {selectedTerritoryId === territory.id ? 'Selected' : 'Select'}
-                                            </button>
-                                        </div>
+                            <Marker position={getTerritoryCenter(territory)}>
+                                <Popup>
+                                    <div>
+                                        <h3 className="text-center text-2xl font-bold" style={{color:territory.color}}>{territory.name}</h3>
+                                        <hr/>
+                                        <p><strong>Gang:</strong> {territory.gang}</p>
+                                        <p><strong>Extra Details:</strong> <span>extra details</span></p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedTerritoryId(
+                                                    selectedTerritoryId === territory.id ? null : territory.id
+                                                );
+                                            }}
+                                            className={`text-xs p-1 mb-1 w-full ${
+                                                selectedTerritoryId === territory.id
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-gray-200'
+                                            }`}
+                                        >
+                                            {selectedTerritoryId === territory.id ? 'Selected' : 'Select'}
+                                        </button>
+
                                     </div>
-                                </Tooltip>
+                                </Popup>
                             </Marker>
                         )}
                     </LayerGroup>
