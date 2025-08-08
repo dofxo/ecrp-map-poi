@@ -1,4 +1,4 @@
-import { LayerGroup, Rectangle, Tooltip, Marker, useMapEvents, Popup } from 'react-leaflet';
+import { LayerGroup, Rectangle, Popup, useMapEvents } from 'react-leaflet';
 import { useState } from 'react';
 import PaintControls from './PaintControls';
 import { defaultTerritories } from "../data/gangTerritories/gangTerritories.ts";
@@ -36,6 +36,7 @@ const Territories = () => {
     });
 
     const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(null);
+    const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
 
     const generateStaticData = () => {
         const staticData = territories.map(territory => {
@@ -97,6 +98,7 @@ const Territories = () => {
                 if (updatedBoxes.length === 0) {
                     setTerritories(prev => prev.filter(t => t.id !== territory.id));
                     setSelectedTerritoryId(null);
+                    setPopupPosition(null);
                 } else {
                     const updatedTerritory = {
                         ...territory,
@@ -111,11 +113,6 @@ const Territories = () => {
     });
 
     const startPainting = (mode: PaintModeType) => {
-        if (mode === 'edit' && !selectedTerritoryId) {
-            alert('Please select a territory first by clicking its "Select" button');
-            return;
-        }
-
         setPaintMode(prev => ({
             ...prev,
             active: true,
@@ -129,12 +126,14 @@ const Territories = () => {
     const stopPainting = () => {
         setPaintMode(prev => ({ ...prev, active: false }));
         setSelectedTerritoryId(null);
+        setPopupPosition(null);
     };
 
     const deleteTerritory = (id: string) => {
         setTerritories(prev => prev.filter(t => t.id !== id));
         if (selectedTerritoryId === id) {
             setSelectedTerritoryId(null);
+            setPopupPosition(null);
         }
     };
 
@@ -151,74 +150,69 @@ const Territories = () => {
         setSelectedTerritoryId(newId);
     };
 
-    // <-- Added: Calculate center of territory by averaging all boxes' bounds points
-    const getTerritoryCenter = (territory: PixelTerritory): [number, number] => {
-        const allPoints = territory.boxes.flatMap(box => box.bounds);
-        if (allPoints.length === 0) return [0, 0];
-        const lats = allPoints.map(p => p[0]);
-        const lngs = allPoints.map(p => p[1]);
-        const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
-        const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
-        return [avgLat, avgLng];
-    };
-
     return (
         <>
-            {territories.map((territory) => {
-                const middleBoxIndex = Math.floor(territory.boxes.length / 2);
+            {territories.map((territory) => (
+                <LayerGroup key={territory.id}>
+                    {territory.boxes.map((box, index) => (
+                        <Rectangle
+                            key={`${territory.id}-${index}`}
+                            bounds={box.bounds}
+                            pathOptions={{
+                                fillColor: territory.color,
+                                color: territory.color,
+                                fillOpacity: territory.id === selectedTerritoryId ? 0.9 : 0.7,
+                                weight: territory.id === selectedTerritoryId ? 1 : 0.5
+                            }}
+                            eventHandlers={{
+                                click: (e) => {
+                                    setSelectedTerritoryId(territory.id);
+                                    const bounds = box.bounds;
+                                    const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
+                                    const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
+                                    setPopupPosition([centerLat, centerLng]);
+                                },
+                                contextmenu: (e) => {
+                                    e.originalEvent.preventDefault();
+                                    deleteTerritory(territory.id);
+                                }
+                            }}
+                        />
+                    ))}
 
-                return (
-                    <LayerGroup key={territory.id}>
-                        {territory.boxes.map((box, index) => (
-                            <Rectangle
-                                key={`${territory.id}-${index}`}
-                                bounds={box.bounds}
-                                pathOptions={{
-                                    fillColor: territory.color,
-                                    color: territory.color,
-                                    fillOpacity: territory.id === selectedTerritoryId ? 0.9 : 0.7,
-                                    weight: territory.id === selectedTerritoryId ? 1 : 0.5
-                                }}
-                                eventHandlers={{
-                                    contextmenu: (e) => {
-                                        e.originalEvent.preventDefault();
-                                        deleteTerritory(territory.id);
-                                    }
-                                }}
-                            />
-                        ))}
-
-                        {territory.boxes.length > 0 && (
-                            <Marker position={getTerritoryCenter(territory)}>
-                                <Popup>
-                                    <div>
-                                        <h3 className="text-center text-2xl font-bold" style={{color:territory.color}}>{territory.name}</h3>
-                                        <hr/>
-                                        <p><strong>Gang:</strong> {territory.gang}</p>
-                                        <p><strong>Extra Details:</strong> <span>extra details</span></p>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedTerritoryId(
-                                                    selectedTerritoryId === territory.id ? null : territory.id
-                                                );
-                                            }}
-                                            className={`text-xs p-1 mb-1 w-full ${
-                                                selectedTerritoryId === territory.id
-                                                    ? 'bg-blue-500 text-white'
-                                                    : 'bg-gray-200'
-                                            }`}
-                                        >
-                                            {selectedTerritoryId === territory.id ? 'Selected' : 'Select'}
-                                        </button>
-
-                                    </div>
-                                </Popup>
-                            </Marker>
-                        )}
-                    </LayerGroup>
-                );
-            })}
+                    {selectedTerritoryId == territory.id && popupPosition && paintMode.mode !== 'edit' &&(
+                        <Popup
+                            position={popupPosition}
+                            onClose={() => {
+                                setSelectedTerritoryId(null);
+                                setPopupPosition(null);
+                            }}
+                        >
+                            <div>
+                                <h3
+                                    className="text-center text-2xl font-bold"
+                                    style={{ color: territory.color }}
+                                >
+                                    {territory.name}
+                                </h3>
+                                <hr />
+                                <p><strong>Gang:</strong> {territory.gang}</p>
+                                <p><strong>Extra Details:</strong> <span>extra details</span></p>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedTerritoryId(null);
+                                        setPopupPosition(null);
+                                    }}
+                                    className="text-xs p-1 mb-1 w-full bg-blue-500 text-white"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </Popup>
+                    )}
+                </LayerGroup>
+            ))}
 
             {isDevMode && (
                 <PaintControls

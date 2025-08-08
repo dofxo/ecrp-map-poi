@@ -5157,12 +5157,12 @@ export const alliance: PixelTerritory = {
         {
             bounds: [
                 [
-                    780,
-                    2970
+                    900,
+                    3940
                 ],
                 [
-                    790,
-                    2980
+                    910,
+                    3950
                 ]
             ]
         }
