@@ -14,7 +14,7 @@ export interface Poi {
     todayDate: string
 }
 
-const isDevMode = true;
+const isDevMode = import.meta.env.MODE === 'development';
 
 const App = () => {
 
