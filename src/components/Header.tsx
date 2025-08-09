@@ -17,7 +17,7 @@ const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, set
 
     return <header className="flex justify-between items-center p-5 gap-5 bg-[var(--bg-color)]">
         <div className="flex justify-between items-center gap-5 text-[var(--text-color)]">
-            <img src="/images/gnd.png" alt="logo" className="w-[48px]"/>
+            <img src="/ecrp-map-poi/images/gnd.png" alt="logo" className="w-[48px]"/>
             <h1 className="text-2xl">Points of interest</h1>
         </div>
         <div className="flex gap-5 items-center">
