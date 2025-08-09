@@ -33,12 +33,14 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
         adderName: "",
         poiType: "drug",
         poiName: "",
-        latLng: [0, 0]
+        latLng: [0, 0],
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [poiToDelete, setPoiToDelete] = useState<number | null>(null);
+
+    const [poiId, setPoiId] = useState<string | null>(null);
 
     const imageUrl = '/ecrp-map-poi/images/map.png';
     const imageWidth = 5000;
@@ -56,7 +58,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
         setIsDeleteModalOpen(true);
     };
 
-    const handleOk = () => {
+    const handleOk = async () => {
         if (!poiName || !adderName) return toast.error("Please fill in all fields");
 
         const todayDate = formatDateDDMMMYYYY(new Date());
@@ -68,19 +70,29 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             todayDate,
         };
 
-        if (isDevMode) {
-            navigator.clipboard.writeText(JSON.stringify(poiDetails, null, 2))
-                .then(() => alert('POI copied to clipboard!'));
-        }
+        try {
+            await supabase
+                .from('pois')
+                .insert([
+                    poiDetails,
+                ])
+                .select()
 
-        setPoiList(prev => [...prev, poiDetails]);
-        setIsModalOpen(false);
-        setIsClick(false);
-        toast.success("POI saved!");
+            setPoiList(prev => [...prev, poiDetails]);
+
+            setIsModalOpen(false);
+            setIsClick(false);
+
+            toast.success("POI saved!");
+
+        } catch {
+            toast.error("Error saving POI");
+        }
     };
 
     const handleDelete = async () => {
         const {data: pw} = await supabase.from('pw').select('pw');
+
         //@ts-ignore
         if (pw[0].pw !== deletePw) {
             setDeletePw("");
@@ -88,12 +100,18 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             return toast.error("Incorrect password");
         }
 
+        await supabase
+            .from('pois')
+            .delete()
+            .eq('id', poiId)
+
         if (poiToDelete !== null) {
             setPoiList(poiList.filter((_, i) => i !== poiToDelete));
             toast.success("POI removed!");
         }
         setIsDeleteModalOpen(false);
         setPoiToDelete(null);
+        setPoiId(null);
     };
 
     const handleCancelDelete = () => {
@@ -103,10 +121,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | poiTypeKey) => {
         if (typeof e === 'string') {
-            setNewPOI(prev => ({ ...prev, poiType: e }));
+            setNewPOI(prev => ({...prev, poiType: e}));
         } else {
             const {name, value} = e.target;
-            setNewPOI(prev => ({ ...prev, [name]: value } as NewPOIState));
+            setNewPOI(prev => ({...prev, [name]: value} as NewPOIState));
         }
     };
 
@@ -166,7 +184,11 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                                         className="text-sm w-full"
                                         type="primary"
                                         danger
-                                        onClick={() => showDeleteModal(index)}
+                                        onClick={() => {
+                                            //@ts-ignore
+                                            setPoiId(poi.id);
+                                            showDeleteModal(index)
+                                        }}
                                         icon={<span>🗑️</span>}
                                     >
                                         remove poi
@@ -174,7 +196,8 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                                 </div>
                             </Popup>
                         </Marker>
-                    );
+                    )
+
                 })}
             </>
         );
@@ -189,7 +212,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             alignItems: 'center',
             overflow: 'hidden'
         }}>
-            <div style={{ width: '100%', height: '90vh' }}>
+            <div style={{width: '100%', height: '90vh'}}>
 
 
                 <MapContainer
@@ -210,7 +233,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     }}
                     id='map'
                 >
-                    <ImageOverlay url={imageUrl} bounds={bounds} />
+                    <ImageOverlay url={imageUrl} bounds={bounds}/>
                     <MapClickHandler/>
                     <PoiMarkers/>
                     {showTerritory && <Territories isDevMode={isDevMode}/>}
