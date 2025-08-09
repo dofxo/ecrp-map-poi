@@ -212,7 +212,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             alignItems: 'center',
             overflow: 'hidden'
         }}>
-            <div style={{width: '100%', height: '90vh'}}>
+            <div style={{width: '100%', height: '85vh'}}>
 
 
                 <MapContainer
