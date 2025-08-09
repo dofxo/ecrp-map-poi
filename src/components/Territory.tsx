@@ -59,10 +59,37 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     };
 
     // Helper: Add multiple boxes in a horizontal line from startX to endX at fixed y
-    const addBoxesInLine = (startX: number, endX: number, y: number, territory: PixelTerritory) => {
+    const addBoxesInHorizontalLine = (startX: number, endX: number, y: number, territory: PixelTerritory) => {
         const boxesToAdd = [];
         for (let x = startX; x <= endX; x += paintMode.boxSize) {
-            // Check if box already exists
+            const exists = territory.boxes.some(b =>
+                b.bounds[0][0] === y &&
+                b.bounds[0][1] === x
+            );
+            if (!exists) {
+                boxesToAdd.push({
+                    bounds: [
+                        [y, x],
+                        [y + paintMode.boxSize, x + paintMode.boxSize]
+                    ] as [[number, number], [number, number]]
+                });
+            }
+        }
+        if (boxesToAdd.length > 0) {
+            const updatedTerritory = {
+                ...territory,
+                boxes: [...territory.boxes, ...boxesToAdd]
+            };
+            setTerritories(prev =>
+                prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
+            );
+        }
+    };
+
+    // Helper: Add multiple boxes in a vertical line from startY to endY at fixed x
+    const addBoxesInVerticalLine = (startY: number, endY: number, x: number, territory: PixelTerritory) => {
+        const boxesToAdd = [];
+        for (let y = startY; y <= endY; y += paintMode.boxSize) {
             const exists = territory.boxes.some(b =>
                 b.bounds[0][0] === y &&
                 b.bounds[0][1] === x
@@ -106,11 +133,33 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
             if (!territory) return;
 
             if (paintMode.mode === 'add') {
-                if (e.originalEvent.shiftKey && lastClickedPos.x !== null && lastClickedPos.y === snappedLat) {
-                    // Shift + click: fill horizontal line from last clicked X to current X at Y
-                    const startX = Math.min(lastClickedPos.x, snappedLng);
-                    const endX = Math.max(lastClickedPos.x, snappedLng);
-                    addBoxesInLine(startX, endX, snappedLat, territory);
+                if (e.originalEvent.shiftKey && lastClickedPos.x !== null && lastClickedPos.y !== null) {
+                    if (lastClickedPos.y === snappedLat) {
+                        // Horizontal line fill
+                        const startX = Math.min(lastClickedPos.x, snappedLng);
+                        const endX = Math.max(lastClickedPos.x, snappedLng);
+                        addBoxesInHorizontalLine(startX, endX, snappedLat, territory);
+                    } else if (lastClickedPos.x === snappedLng) {
+                        // Vertical line fill
+                        const startY = Math.min(lastClickedPos.y, snappedLat);
+                        const endY = Math.max(lastClickedPos.y, snappedLat);
+                        addBoxesInVerticalLine(startY, endY, snappedLng, territory);
+                    } else {
+                        // Neither x nor y match, just add single box
+                        const exists = territory.boxes.some(b =>
+                            b.bounds[0][0] === clickedBox.bounds[0][0] &&
+                            b.bounds[0][1] === clickedBox.bounds[0][1]
+                        );
+                        if (!exists) {
+                            const updatedTerritory = {
+                                ...territory,
+                                boxes: [...territory.boxes, clickedBox]
+                            };
+                            setTerritories(prev =>
+                                prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
+                            );
+                        }
+                    }
                 } else {
                     // Single box add
                     const exists = territory.boxes.some(b =>
@@ -127,7 +176,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                         );
                     }
                 }
-                // Update last clicked position after adding
                 setLastClickedPos({x: snappedLng, y: snappedLat});
             } else if (paintMode.mode === 'remove') {
                 const updatedBoxes = territory.boxes.filter(b =>
@@ -148,8 +196,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                         prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
                     );
                 }
-
-                // Update last clicked position after removing
                 setLastClickedPos({x: snappedLng, y: snappedLat});
             }
         }
@@ -245,16 +291,12 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                 </h3>
                                 <hr/>
                                 <p><strong>Gang:</strong> {territory.gang}</p>
-                                <p><strong>Extra Details:</strong> <span>extra details</span></p>
+                                <p><strong>Boxes:</strong> {territory.boxes.length}</p>
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedTerritoryId(null);
-                                        setPopupPosition(null);
-                                    }}
-                                    className="text-xs p-1 mb-1 w-full bg-blue-500 text-white"
+                                    className="btn btn-danger btn-sm mt-2"
+                                    onClick={() => deleteTerritory(territory.id)}
                                 >
-                                    Close
+                                    Delete Territory
                                 </button>
                             </div>
                         </Popup>
@@ -266,13 +308,13 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                 <PaintControls
                     paintMode={paintMode}
                     setPaintMode={setPaintMode}
-                    selectedTerritoryId={selectedTerritoryId}
-                    territories={territories}
                     startPainting={startPainting}
                     stopPainting={stopPainting}
                     createNewTerritory={createNewTerritory}
                     generateStaticData={generateStaticData}
+                    territories={territories}
                     setTerritories={setTerritories}
+                    selectedTerritoryId={selectedTerritoryId}
                     setSelectedTerritoryId={setSelectedTerritoryId}
                 />
             )}
