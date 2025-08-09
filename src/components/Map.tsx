@@ -119,7 +119,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
 
     const MapClickHandler = () => {
         useMapEvents({
-            click: (e) => {
+            click: (e:any) => {
                 if (isClick) {
                     showModal();
                     setNewPOI(prev => ({
@@ -137,6 +137,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
             <>
                 {poiList.filter(poi => filterDealerType === 'all' || poi.poiType === filterDealerType).map((poi, index) => {
                     const dealerType = poi.poiType as poiTypeKey;
+                    // @ts-ignore
                     const emojiIcon = L.divIcon({
                         html: `<div style="font-size: 24px">${poiTypes[dealerType]?.icon}</div>`,
                         className: 'emoji-marker',
@@ -149,6 +150,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                         <Marker
                             key={index}
                             position={[poi.latLng[0], poi.latLng[1]]}
+                            // @ts-ignore
                             icon={emojiIcon}
                         >
                             <Popup>
@@ -192,14 +194,17 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
             }}>
                 <MapContainer
                     ref={mapRef}
+                    //@ts-ignore
                     center={[imageHeight / 2, imageWidth / 2]}
                     zoom={-2}
                     minZoom={-2}
                     maxZoom={2}
+                    //@ts-ignore
                     crs={L.CRS.Simple}
                     style={{height: '100%', width: '100%'}}
                     maxBounds={bounds}
                     maxBoundsViscosity={1.0}
+                    //@ts-ignore
                     whenCreated={(mapInstance) => {
                         mapInstance.fitBounds(bounds, {padding: [0, 0]});
                     }}

@@ -36,8 +36,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
 
-    // Track last clicked box position for shift+click line fill
-    const [lastClickedPos, setLastClickedPos] = useState<{x: number | null, y: number | null}>({x: null, y: null});
+    const [lastClickedPos, setLastClickedPos] = useState<{ x: number | null, y: number | null }>({x: null, y: null});
 
     const generateStaticData = () => {
         if (!selectedTerritoryId) {
@@ -124,7 +123,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     };
 
     useMapEvents({
-        click: (e) => {
+        click: (e: any) => {
             if (!paintMode.active || !selectedTerritoryId) return;
 
             const {lat, lng} = e.latlng;
@@ -266,7 +265,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                 weight: territory.id === selectedTerritoryId ? 1 : 0.5
                             }}
                             eventHandlers={{
-                                click: (e) => {
+                                click: () => {
                                     if (paintMode.active) return;
 
                                     setSelectedTerritoryId(territory.id);
@@ -275,7 +274,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                     const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
                                     setPopupPosition([centerLat, centerLng]);
                                 },
-                                contextmenu: (e) => {
+                                contextmenu: (e: any) => {
                                     e.originalEvent.preventDefault();
                                     deleteTerritory(territory.id);
                                 }
@@ -286,6 +285,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                     {selectedTerritoryId === territory.id && popupPosition && paintMode.mode !== 'edit' && (
                         <Popup
                             position={popupPosition}
+                            //@ts-ignore
                             onClose={() => {
                                 setSelectedTerritoryId(null);
                                 setPopupPosition(null);
