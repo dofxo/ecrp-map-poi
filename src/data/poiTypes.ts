@@ -8,7 +8,7 @@ export interface DealerType {
 
 export const poiTypes: Record<poiTypeKey, DealerType> = {
     dropPoints: {
-        icon: "🗳️",
+        icon: "🟠",
         name: "Drop Points",
         value: "dropPoints"
     }

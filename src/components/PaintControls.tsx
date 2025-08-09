@@ -220,9 +220,6 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                         >
                             Enter Edit Mode
                         </button>
-                        <p className="text-xs text-gray-500 text-center">
-                            Right-click on territories to delete them
-                        </p>
                     </div>
                 )}
             </div>

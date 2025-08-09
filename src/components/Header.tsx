@@ -1,16 +1,15 @@
 import {Button, Switch} from "antd";
 import toast from "react-hot-toast";
 import {PlusOutlined} from "@ant-design/icons";
-import {poiTypeKey} from "../data/poiTypes.ts";
 import Filter from "./Filter.tsx";
+import {handleExportFullMap} from "../helper/handleExportFullMap.ts";
 
-const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, setShowTerritory }: {
+const Header = ({isClick, setIsClick, setShowTerritory, setShowDropPoints}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
-    filterDealerType: poiTypeKey | 'all',
-    setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
     setShowTerritory: React.Dispatch<React.SetStateAction<boolean>>
     showTerritory: boolean
+    setShowDropPoints: React.Dispatch<React.SetStateAction<boolean>>
 
 }) => {
 
@@ -20,25 +19,43 @@ const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, set
             <img src="/ecrp-map-poi/images/gnd.png" alt="logo" className="w-[48px]"/>
             <h1 className="text-2xl">Points of interest</h1>
         </div>
-        <div className="flex gap-5 items-center">
-            <div className='flex items-center gap-2'>
-                <label className="text-[18px]">Territories</label>
-                <Switch defaultChecked onChange={setShowTerritory}/>
+        <div className="grid grid-cols-2 gap-5">
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
+                    <div className='flex items-center gap-2'>
+                        <Switch size='small' defaultChecked onChange={setShowTerritory}/>
+                        <label className="text-[13px]">Territories</label>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                        <Switch size="small" defaultChecked onChange={setShowDropPoints}/>
+                        <label className="text-[13px]">Drop points</label>
+                    </div>
+
+                </div>
+
+                <Filter/>
 
             </div>
-            <Filter filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType}/>
-            <Button type="primary" variant="solid" loading={isClick} icon={<PlusOutlined/>}
-                    color={isClick ? "purple" : "primary"} onClick={() => {
-                toast('Click on the map to add your POI',
-                    {
-                        icon: '❗',
-                        style: {
-                            borderRadius: '10px',
-                        },
-                    }
-                );
-                setIsClick(true)
-            }}>{!isClick ? "Add new POI" : "Click on the map"}</Button>
+            <div className="flex flex-col gap-2 justify-between">
+                <Button type="primary" variant="solid" loading={isClick} icon={<PlusOutlined/>}
+                        color={isClick ? "purple" : "primary"} onClick={() => {
+                    toast('Click on the map to add your POI',
+                        {
+                            icon: '❗',
+                            style: {
+                                borderRadius: '10px',
+                            },
+                        }
+                    );
+                    setIsClick(true)
+                }}>{!isClick ? "Add new POI" : "Click on the map"}</Button>
+
+                <Button type="primary" onClick={handleExportFullMap}>
+                    📸 Export Visible Map Area
+                </Button>
+
+
+            </div>
         </div>
     </header>
 
