@@ -1,4 +1,3 @@
-import React from 'react';
 import { PixelTerritory, PaintMode } from './Territory.tsx';
 
 interface PaintControlsProps {

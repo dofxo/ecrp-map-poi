@@ -23,7 +23,6 @@ export interface PaintMode {
     mode: PaintModeType;
 }
 
-
 const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     const [territories, setTerritories] = useState<PixelTerritory[]>(defaultTerritories);
     const [paintMode, setPaintMode] = useState<PaintMode>({
@@ -36,6 +35,9 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
 
     const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
+
+    // Track last clicked box position for shift+click line fill
+    const [lastClickedPos, setLastClickedPos] = useState<{x: number | null, y: number | null}>({x: null, y: null});
 
     const generateStaticData = () => {
         const staticData = territories.map(territory => {
@@ -54,6 +56,35 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
             console.error('Failed to copy:', err);
             alert('Failed to copy data');
         });
+    };
+
+    // Helper: Add multiple boxes in a horizontal line from startX to endX at fixed y
+    const addBoxesInLine = (startX: number, endX: number, y: number, territory: PixelTerritory) => {
+        const boxesToAdd = [];
+        for (let x = startX; x <= endX; x += paintMode.boxSize) {
+            // Check if box already exists
+            const exists = territory.boxes.some(b =>
+                b.bounds[0][0] === y &&
+                b.bounds[0][1] === x
+            );
+            if (!exists) {
+                boxesToAdd.push({
+                    bounds: [
+                        [y, x],
+                        [y + paintMode.boxSize, x + paintMode.boxSize]
+                    ] as [[number, number], [number, number]]
+                });
+            }
+        }
+        if (boxesToAdd.length > 0) {
+            const updatedTerritory = {
+                ...territory,
+                boxes: [...territory.boxes, ...boxesToAdd]
+            };
+            setTerritories(prev =>
+                prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
+            );
+        }
     };
 
     useMapEvents({
@@ -75,19 +106,29 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
             if (!territory) return;
 
             if (paintMode.mode === 'add') {
-                const exists = territory.boxes.some(b =>
-                    b.bounds[0][0] === clickedBox.bounds[0][0] &&
-                    b.bounds[0][1] === clickedBox.bounds[0][1]
-                );
-                if (!exists) {
-                    const updatedTerritory = {
-                        ...territory,
-                        boxes: [...territory.boxes, clickedBox]
-                    };
-                    setTerritories(prev =>
-                        prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
+                if (e.originalEvent.shiftKey && lastClickedPos.x !== null && lastClickedPos.y === snappedLat) {
+                    // Shift + click: fill horizontal line from last clicked X to current X at Y
+                    const startX = Math.min(lastClickedPos.x, snappedLng);
+                    const endX = Math.max(lastClickedPos.x, snappedLng);
+                    addBoxesInLine(startX, endX, snappedLat, territory);
+                } else {
+                    // Single box add
+                    const exists = territory.boxes.some(b =>
+                        b.bounds[0][0] === clickedBox.bounds[0][0] &&
+                        b.bounds[0][1] === clickedBox.bounds[0][1]
                     );
+                    if (!exists) {
+                        const updatedTerritory = {
+                            ...territory,
+                            boxes: [...territory.boxes, clickedBox]
+                        };
+                        setTerritories(prev =>
+                            prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
+                        );
+                    }
                 }
+                // Update last clicked position after adding
+                setLastClickedPos({x: snappedLng, y: snappedLat});
             } else if (paintMode.mode === 'remove') {
                 const updatedBoxes = territory.boxes.filter(b =>
                     !(b.bounds[0][0] === clickedBox.bounds[0][0] &&
@@ -107,6 +148,9 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                         prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
                     );
                 }
+
+                // Update last clicked position after removing
+                setLastClickedPos({x: snappedLng, y: snappedLat});
             }
         }
     });
@@ -126,6 +170,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         setPaintMode(prev => ({...prev, active: false}));
         setSelectedTerritoryId(null);
         setPopupPosition(null);
+        setLastClickedPos({x: null, y: null});
     };
 
     const deleteTerritory = (id: string) => {
@@ -133,6 +178,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         if (selectedTerritoryId === id) {
             setSelectedTerritoryId(null);
             setPopupPosition(null);
+            setLastClickedPos({x: null, y: null});
         }
     };
 
@@ -147,6 +193,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         };
         setTerritories(prev => [...prev, newTerritory]);
         setSelectedTerritoryId(newId);
+        setLastClickedPos({x: null, y: null});
     };
 
     return (
@@ -166,7 +213,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                             eventHandlers={{
                                 click: (e) => {
                                     if (paintMode.active) return;
-                                    
+
                                     setSelectedTerritoryId(territory.id);
                                     const bounds = box.bounds;
                                     const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
@@ -181,7 +228,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                         />
                     ))}
 
-                    {selectedTerritoryId == territory.id && popupPosition && paintMode.mode !== 'edit' && (
+                    {selectedTerritoryId === territory.id && popupPosition && paintMode.mode !== 'edit' && (
                         <Popup
                             position={popupPosition}
                             onClose={() => {
