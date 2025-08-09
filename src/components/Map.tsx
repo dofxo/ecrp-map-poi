@@ -173,26 +173,27 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                             icon={emojiIcon}
                         >
                             <Popup>
-                                <div className="p-2">
-                                    <h3><span className='font-bold'>POI name:</span> {poi.poiName}</h3>
-                                    <p><span className='font-bold'>POI type: </span>
+                                <div className="p-2 flex flex-col gap-2">
+                                    <p className='!m-0'><span className='font-bold'>POI name:</span> {poi.poiName}</p>
+                                    <p className='!m-0'><span className='font-bold'>POI type: </span>
                                         {poiTypes[dealerType]?.icon} {poiTypes[dealerType]?.name}
                                     </p>
-                                    <p><span className='font-bold'>Added by:</span> {poi.adderName}</p>
-                                    <p><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
-                                    <Button
-                                        className="text-sm w-full"
-                                        type="primary"
-                                        danger
-                                        onClick={() => {
-                                            //@ts-ignore
-                                            setPoiId(poi.id);
-                                            showDeleteModal(index)
-                                        }}
-                                        icon={<span>🗑️</span>}
-                                    >
-                                        remove poi
-                                    </Button>
+                                    <p className='!m-0'><span className='font-bold'>Added by:</span> {poi.adderName}</p>
+                                    <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
+                                    {(poi.poiType === "dropPoints" && isDevMode) && (<Button
+                                            className="text-sm w-full"
+                                            type="primary"
+                                            danger
+                                            onClick={() => {
+                                                //@ts-ignore
+                                                setPoiId(poi.id);
+                                                showDeleteModal(index)
+                                            }}
+                                            icon={<span>🗑️</span>}
+                                        >
+                                            remove poi
+                                        </Button>
+                                    )}
                                 </div>
                             </Popup>
                         </Marker>
