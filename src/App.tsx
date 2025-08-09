@@ -5,7 +5,6 @@ import {Toaster} from "react-hot-toast";
 import {poiTypeKey} from "./data/poiTypes.ts";
 import {dropPoints} from "./data/dropPoints.ts";
 
-
 export interface Poi {
     poiName: string,
     adderName: string,
@@ -23,7 +22,6 @@ const App = () => {
     const [poiList, setPoiList] = useState<Poi[]>([...dropPoints])
     const [filterDealerType, setFilterDealerType] = useState<poiTypeKey | 'all'>('all');
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
-
 
 
     return (

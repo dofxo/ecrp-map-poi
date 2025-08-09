@@ -7,6 +7,7 @@ import type {Poi} from "../App.tsx";
 import {formatDateDDMMMYYYY} from "../helper/formatDate.ts";
 import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
 import Territories from "./Territory.tsx";
+import {supabase} from "../config/supabase.ts";
 
 interface NewPOIState {
     poiName: string;
@@ -15,7 +16,7 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory,isDevMode}: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory, isDevMode}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
@@ -26,6 +27,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
     isDevMode: boolean
 }) => {
     const mapRef = useRef(null);
+    const [deletePw, setDeletePw] = useState("");
 
     const [{poiName, poiType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
@@ -41,6 +43,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
     const showModal = () => {
         setIsModalOpen(true);
     };
+
+    const handlePwDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDeletePw(e.target.value)
+    }
 
     const showDeleteModal = (index: number) => {
         setPoiToDelete(index);
@@ -74,7 +80,19 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
         toast.success("POI saved!");
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        const {data: pw} = await supabase
+            .from('pw')
+            .select('pw')
+
+        //@ts-ignore
+        if (pw[0].pw !== deletePw) {
+            setDeletePw("");
+            setIsDeleteModalOpen(false)
+            return toast.error("Incorrect password");
+        }
+
+
         if (poiToDelete !== null) {
             const filteredPoiList = poiList.filter((_, i) => i !== poiToDelete);
             setPoiList(filteredPoiList);
@@ -119,7 +137,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
 
     const MapClickHandler = () => {
         useMapEvents({
-            click: (e:any) => {
+            click: (e: any) => {
                 if (isClick) {
                     showModal();
                     setNewPOI(prev => ({
@@ -287,13 +305,14 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                 >
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiToDelete !== null && (
-                        <div className="mt-4 p-2 bg-gray-100 rounded">
+                        <div className="mt-4 p-2 bg-gray-100 rounded flex flex-col gap-5">
                             <p><strong>Name:</strong> {poiList[poiToDelete].poiName}</p>
                             <p>
                                 <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
                             </p>
                             <p className="flex items-center gap-2">
-                                <strong>Password:</strong> <Input placeholder="Enter password"/>
+                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete}
+                                                                  placeholder="Enter password"/>
                             </p>
                         </div>
                     )}
