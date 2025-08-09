@@ -40,18 +40,27 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     const [lastClickedPos, setLastClickedPos] = useState<{x: number | null, y: number | null}>({x: null, y: null});
 
     const generateStaticData = () => {
-        const staticData = territories.map(territory => {
-            return `{
+        if (!selectedTerritoryId) {
+            alert('No territory selected!');
+            return;
+        }
+        const territory = territories.find(t => t.id === selectedTerritoryId);
+
+        if (!territory) {
+            alert('Selected territory not found!');
+            return;
+        }
+
+        const staticData = `{
     id: '${territory.id}',
     name: '${territory.name.replace(/'/g, "\\'")}',
     gang: '${territory.gang.replace(/'/g, "\\'")}',
     color: '${territory.color}',
     boxes: ${JSON.stringify(territory.boxes, null, 4).replace(/"bounds"/g, 'bounds')}
 }`;
-        }).join(',\n\n');
 
         navigator.clipboard.writeText(staticData).then(() => {
-            alert('Static data copied to clipboard! Paste it into your territories file.');
+            alert('Static data for selected territory copied to clipboard! Paste it into your territories file.');
         }).catch(err => {
             console.error('Failed to copy:', err);
             alert('Failed to copy data');
