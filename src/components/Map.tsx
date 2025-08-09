@@ -68,11 +68,6 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             todayDate,
         };
 
-        if (isDevMode) {
-            navigator.clipboard.writeText(JSON.stringify(poiDetails, null, 2))
-                .then(() => alert('POI copied to clipboard!'));
-        }
-
         setPoiList(prev => [...prev, poiDetails]);
         setIsModalOpen(false);
         setIsClick(false);

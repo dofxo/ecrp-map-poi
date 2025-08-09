@@ -33,7 +33,7 @@ const App = () => {
             //@ts-ignore
             setPoiList(pois)
         })()
-    }, [poiList])
+    }, [])
 
 
     return (
