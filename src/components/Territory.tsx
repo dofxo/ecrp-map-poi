@@ -165,6 +165,8 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                             }}
                             eventHandlers={{
                                 click: (e) => {
+                                    if (paintMode.active) return;
+                                    
                                     setSelectedTerritoryId(territory.id);
                                     const bounds = box.bounds;
                                     const centerLat = (bounds[0][0] + bounds[1][0]) / 2;
