@@ -16,19 +16,18 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTerritory, isDevMode}: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode, showDropPoints}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
     setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
-    filterDealerType: poiTypeKey | 'all',
-    setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
     showTerritory: boolean
     isDevMode: boolean
+    showDropPoints: boolean
 }) => {
-    const mapRef = useRef(null);
     const [deletePw, setDeletePw] = useState("");
 
+    const mapRef = useRef(null);
     const [{poiName, poiType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
         poiType: "drug",
@@ -151,9 +150,16 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
     };
 
     const PoiMarkers = () => {
+
+        const filteredPoiList = poiList.filter(poi => {
+            if (poi.poiType === "dropPoints") {
+                return showDropPoints;
+            }
+            return true;
+        });
         return (
             <>
-                {poiList.filter(poi => filterDealerType === 'all' || poi.poiType === filterDealerType).map((poi, index) => {
+                {filteredPoiList.map((poi, index) => {
                     const dealerType = poi.poiType as poiTypeKey;
                     // @ts-ignore
                     const emojiIcon = L.divIcon({
@@ -311,7 +317,8 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                                 <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
                             </p>
                             <p className="flex items-center gap-2">
-                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete} placeholder="Enter password"/>
+                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete}
+                                                                  placeholder="Enter password"/>
                             </p>
                         </div>
                     )}

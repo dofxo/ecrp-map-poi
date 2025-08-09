@@ -1,16 +1,14 @@
 import {Button, Switch} from "antd";
 import toast from "react-hot-toast";
 import {PlusOutlined} from "@ant-design/icons";
-import {poiTypeKey} from "../data/poiTypes.ts";
 import Filter from "./Filter.tsx";
 
-const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, setShowTerritory }: {
+const Header = ({isClick, setIsClick, setShowTerritory, setShowDropPoints}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
-    filterDealerType: poiTypeKey | 'all',
-    setFilterDealerType: React.Dispatch<React.SetStateAction<poiTypeKey | 'all'>>
     setShowTerritory: React.Dispatch<React.SetStateAction<boolean>>
     showTerritory: boolean
+    setShowDropPoints: React.Dispatch<React.SetStateAction<boolean>>
 
 }) => {
 
@@ -21,12 +19,18 @@ const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, set
             <h1 className="text-2xl">Points of interest</h1>
         </div>
         <div className="flex gap-5 items-center">
-            <div className='flex items-center gap-2'>
-                <label className="text-[18px]">Territories</label>
-                <Switch defaultChecked onChange={setShowTerritory}/>
+            <div className="flex flex-col gap-2">
+                <div className='flex items-center gap-2'>
+                    <Switch size='small' defaultChecked onChange={setShowTerritory}/>
+                    <label className="text-[13px]">Territories</label>
+                </div>
+                <div className='flex items-center gap-2'>
+                    <Switch size="small" defaultChecked onChange={setShowDropPoints}/>
+                    <label className="text-[13px]">Drop points</label>
+                </div>
 
             </div>
-            <Filter filterDealerType={filterDealerType} setFilterDealerType={setFilterDealerType}/>
+            <Filter/>
             <Button type="primary" variant="solid" loading={isClick} icon={<PlusOutlined/>}
                     color={isClick ? "purple" : "primary"} onClick={() => {
                 toast('Click on the map to add your POI',
