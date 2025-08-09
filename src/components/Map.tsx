@@ -193,7 +193,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                 <MapContainer
                     ref={mapRef}
                     center={[imageHeight / 2, imageWidth / 2]}
-                    zoom={0}
+                    zoom={-2}
                     minZoom={-2}
                     maxZoom={2}
                     crs={L.CRS.Simple}
