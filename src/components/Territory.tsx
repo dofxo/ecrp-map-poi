@@ -291,13 +291,7 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                 </h3>
                                 <hr/>
                                 <p><strong>Gang:</strong> {territory.gang}</p>
-                                <p><strong>Boxes:</strong> {territory.boxes.length}</p>
-                                <button
-                                    className="btn btn-danger btn-sm mt-2"
-                                    onClick={() => deleteTerritory(territory.id)}
-                                >
-                                    Delete Territory
-                                </button>
+                                <p><strong>Extra details:</strong> details here</p>
                             </div>
                         </Popup>
                     )}
