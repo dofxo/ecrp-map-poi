@@ -109,7 +109,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
         setIsClick(false);
     };
 
-    const imageUrl = '/images/map.png';
+    const imageUrl = '/ecrp-map-poi/images/map.png';
     const imageWidth = 5000;
     const imageHeight = 5000;
     const bounds = [
