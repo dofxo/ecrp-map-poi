@@ -4,7 +4,7 @@ import {PlusOutlined} from "@ant-design/icons";
 import {poiTypeKey} from "../data/poiTypes.ts";
 import Filter from "./Filter.tsx";
 
-const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, setShowTerritory, showTerritory}: {
+const Header = ({isClick, setIsClick, filterDealerType, setFilterDealerType, setShowTerritory }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
     filterDealerType: poiTypeKey | 'all',

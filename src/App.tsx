@@ -19,6 +19,7 @@ const isDevMode = true;
 const App = () => {
 
     const [isClick, setIsClick] = useState(false)
+    //@ts-ignore
     const [poiList, setPoiList] = useState<Poi[]>([...dropPoints])
     const [filterDealerType, setFilterDealerType] = useState<poiTypeKey | 'all'>('all');
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
