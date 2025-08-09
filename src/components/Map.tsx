@@ -311,8 +311,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                                 <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
                             </p>
                             <p className="flex items-center gap-2">
-                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete}
-                                                                  placeholder="Enter password"/>
+                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete} placeholder="Enter password"/>
                             </p>
                         </div>
                     )}
