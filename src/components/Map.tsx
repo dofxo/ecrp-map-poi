@@ -288,9 +288,12 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, filterDealerType, showTe
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiToDelete !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded">
-                            <p><strong>Dealer:</strong> {poiList[poiToDelete].poiName}</p>
+                            <p><strong>Name:</strong> {poiList[poiToDelete].poiName}</p>
                             <p>
                                 <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
+                            </p>
+                            <p className="flex items-center gap-2">
+                                <strong>Password:</strong> <Input placeholder="Enter password"/>
                             </p>
                         </div>
                     )}

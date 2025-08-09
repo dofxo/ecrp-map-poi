@@ -227,15 +227,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         setLastClickedPos({x: null, y: null});
     };
 
-    const deleteTerritory = (id: string) => {
-        setTerritories(prev => prev.filter(t => t.id !== id));
-        if (selectedTerritoryId === id) {
-            setSelectedTerritoryId(null);
-            setPopupPosition(null);
-            setLastClickedPos({x: null, y: null});
-        }
-    };
-
     const createNewTerritory = () => {
         const newId = `custom-${Date.now()}`;
         const newTerritory: PixelTerritory = {
@@ -274,10 +265,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                     const centerLng = (bounds[0][1] + bounds[1][1]) / 2;
                                     setPopupPosition([centerLat, centerLng]);
                                 },
-                                contextmenu: (e: any) => {
-                                    e.originalEvent.preventDefault();
-                                    deleteTerritory(territory.id);
-                                }
                             }}
                         />
                     ))}
