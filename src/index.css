@@ -64,3 +64,7 @@ body {
 .leaflet-control button:hover {
     opacity: 0.9;
 }
+
+.leaflet-bottom.leaflet-right {
+    display: none !important;
+}
