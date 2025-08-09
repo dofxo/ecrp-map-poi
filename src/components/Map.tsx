@@ -9,6 +9,7 @@ import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
 import Territories from "./Territory.tsx";
 import {supabase} from "../config/supabase.ts";
 
+
 interface NewPOIState {
     poiName: string;
     poiType: poiTypeKey;
@@ -26,8 +27,8 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
     showDropPoints: boolean
 }) => {
     const [deletePw, setDeletePw] = useState("");
+    const mapRef = useRef<any>(null);
 
-    const mapRef = useRef(null);
     const [{poiName, poiType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
         poiType: "drug",
@@ -39,14 +40,17 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [poiToDelete, setPoiToDelete] = useState<number | null>(null);
 
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
+    const imageUrl = '/ecrp-map-poi/images/map.png';
+    const imageWidth = 5000;
+    const imageHeight = 5000;
+    const bounds: [[number, number], [number, number]] = [
+        [0, 0],
+        [imageHeight, imageWidth]
+    ];
 
-    const handlePwDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setDeletePw(e.target.value)
-    }
 
+    const showModal = () => setIsModalOpen(true);
+    const handlePwDelete = (e: React.ChangeEvent<HTMLInputElement>) => setDeletePw(e.target.value);
     const showDeleteModal = (index: number) => {
         setPoiToDelete(index);
         setIsDeleteModalOpen(true);
@@ -66,35 +70,26 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
 
         if (isDevMode) {
             navigator.clipboard.writeText(JSON.stringify(poiDetails, null, 2))
-                .then(() => {
-                    alert('POI copied to clipboard!')
-                })
+                .then(() => alert('POI copied to clipboard!'));
         }
 
         setPoiList(prev => [...prev, poiDetails]);
-
         setIsModalOpen(false);
         setIsClick(false);
-
         toast.success("POI saved!");
     };
 
     const handleDelete = async () => {
-        const {data: pw} = await supabase
-            .from('pw')
-            .select('pw')
-
+        const {data: pw} = await supabase.from('pw').select('pw');
         //@ts-ignore
         if (pw[0].pw !== deletePw) {
             setDeletePw("");
-            setIsDeleteModalOpen(false)
+            setIsDeleteModalOpen(false);
             return toast.error("Incorrect password");
         }
 
-
         if (poiToDelete !== null) {
-            const filteredPoiList = poiList.filter((_, i) => i !== poiToDelete);
-            setPoiList(filteredPoiList);
+            setPoiList(poiList.filter((_, i) => i !== poiToDelete));
             toast.success("POI removed!");
         }
         setIsDeleteModalOpen(false);
@@ -108,16 +103,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | poiTypeKey) => {
         if (typeof e === 'string') {
-            setNewPOI(prev => ({
-                ...prev,
-                poiType: e
-            }));
+            setNewPOI(prev => ({ ...prev, poiType: e }));
         } else {
             const {name, value} = e.target;
-            setNewPOI(prev => ({
-                ...prev,
-                [name]: value
-            } as NewPOIState));
+            setNewPOI(prev => ({ ...prev, [name]: value } as NewPOIState));
         }
     };
 
@@ -125,14 +114,6 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
         setIsModalOpen(false);
         setIsClick(false);
     };
-
-    const imageUrl = '/ecrp-map-poi/images/map.png';
-    const imageWidth = 5000;
-    const imageHeight = 5000;
-    const bounds = [
-        [0, 0],
-        [imageHeight, imageWidth]
-    ];
 
     const MapClickHandler = () => {
         useMapEvents({
@@ -150,13 +131,9 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
     };
 
     const PoiMarkers = () => {
-
-        const filteredPoiList = poiList.filter(poi => {
-            if (poi.poiType === "dropPoints") {
-                return showDropPoints;
-            }
-            return true;
-        });
+        const filteredPoiList = poiList.filter(poi =>
+            poi.poiType === "dropPoints" ? showDropPoints : true
+        );
         return (
             <>
                 {filteredPoiList.map((poi, index) => {
@@ -174,7 +151,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                         <Marker
                             key={index}
                             position={[poi.latLng[0], poi.latLng[1]]}
-                            // @ts-ignore
+                            //@ts-ignore
                             icon={emojiIcon}
                         >
                             <Popup>
@@ -212,10 +189,9 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             alignItems: 'center',
             overflow: 'hidden'
         }}>
-            <div style={{
-                width: '100%',
-                height: '90vh',
-            }}>
+            <div style={{ width: '100%', height: '90vh' }}>
+
+
                 <MapContainer
                     ref={mapRef}
                     //@ts-ignore
@@ -232,11 +208,9 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     whenCreated={(mapInstance) => {
                         mapInstance.fitBounds(bounds, {padding: [0, 0]});
                     }}
+                    id='map'
                 >
-                    <ImageOverlay
-                        url={imageUrl}
-                        bounds={bounds}
-                    />
+                    <ImageOverlay url={imageUrl} bounds={bounds} />
                     <MapClickHandler/>
                     <PoiMarkers/>
                     {showTerritory && <Territories isDevMode={isDevMode}/>}
@@ -253,53 +227,34 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     <div className="flex flex-col gap-2">
                         <div className="space-y-4">
                             <div className="flex flex-col gap-1">
-                                <label htmlFor="adder-name" className="text-sm font-medium text-gray-700">
-                                    Added By
-                                </label>
-                                <Input
-                                    name="adderName"
-                                    onChange={handleInputChange}
-                                    placeholder="e.g. Cole Lawless"
-                                    className="w-full"
-                                />
+                                <label className="text-sm font-medium text-gray-700">Added By</label>
+                                <Input name="adderName" onChange={handleInputChange} placeholder="e.g. Cole Lawless"/>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <label htmlFor="dealer-name" className="text-sm font-medium text-gray-700">
-                                    POI Name
-                                </label>
-                                <Input
-                                    name="poiName"
-                                    onChange={handleInputChange}
-                                    placeholder="e.g. Matthews"
-                                    className="w-full"
-                                />
+                                <label className="text-sm font-medium text-gray-700">POI Name</label>
+                                <Input name="poiName" onChange={handleInputChange} placeholder="e.g. Matthews"/>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <label htmlFor="icon-select" className="text-sm font-medium text-gray-700">
-                                    POI Type
-                                </label>
+                                <label className="text-sm font-medium text-gray-700">POI Type</label>
                                 <Select
-                                    id="icon-select"
                                     onChange={(value: poiTypeKey) => handleInputChange(value)}
                                     defaultValue="drug"
-                                    options={(Object.keys(poiTypes) as poiTypeKey[]).map((key) => ({
-                                        value: key,
-                                        label: (
-                                            <span>
-                                                {poiTypes[key].icon} {poiTypes[key].name}
-                                            </span>
-                                        ),
-                                    }))}
-                                    className="w-full"
+                                    options={(Object.keys(poiTypes) as poiTypeKey[])
+                                        .filter((key) => isDevMode || key !== "dropPoints")
+                                        .map((key) => ({
+                                            value: key,
+                                            label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
+                                        }))
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
                 </Modal>
 
-                {/* Delete Confirmation Modal */}
+                {/* Delete Modal */}
                 <Modal
                     title="Confirm Delete"
                     open={isDeleteModalOpen}
@@ -313,12 +268,10 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     {poiToDelete !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded flex flex-col gap-5">
                             <p><strong>Name:</strong> {poiList[poiToDelete].poiName}</p>
-                            <p>
-                                <strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}
-                            </p>
+                            <p><strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}</p>
                             <p className="flex items-center gap-2">
-                                <strong>Password:</strong> <Input type="password" onChange={handlePwDelete}
-                                                                  placeholder="Enter password"/>
+                                <strong>Password:</strong>
+                                <Input type="password" onChange={handlePwDelete} placeholder="Enter password"/>
                             </p>
                         </div>
                     )}
