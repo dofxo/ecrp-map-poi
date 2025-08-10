@@ -4,12 +4,14 @@ import {PlusOutlined} from "@ant-design/icons";
 import Filter from "./Filter.tsx";
 import {handleExportFullMap} from "../helper/handleExportFullMap.ts";
 
-const Header = ({isClick, setIsClick, setShowTerritory, setShowDropPoints}: {
+const Header = ({gangs, isClick, setIsClick,setShowTerritory, setShowDropPoints, setFilteredGangs}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
     setShowTerritory: React.Dispatch<React.SetStateAction<boolean>>
     showTerritory: boolean
     setShowDropPoints: React.Dispatch<React.SetStateAction<boolean>>
+    gangs: any[]
+    setFilteredGangs: React.Dispatch<React.SetStateAction<string>>
 
 }) => {
 
@@ -33,7 +35,7 @@ const Header = ({isClick, setIsClick, setShowTerritory, setShowDropPoints}: {
 
                 </div>
 
-                <Filter/>
+                <Filter gangs={gangs}  setFilteredGangs={setFilteredGangs}/>
 
             </div>
             <div className="flex flex-col gap-2 justify-between">

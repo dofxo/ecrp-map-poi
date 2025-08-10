@@ -1,10 +1,10 @@
 import Map from "./components/Map.tsx";
 import Header from "./components/Header.tsx";
-import { useEffect, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import { poiTypeKey } from "./data/poiTypes.ts";
-import { supabase } from "./config/supabase.ts";
-import { Modal, Input, Button } from "antd";
+import {useEffect, useState} from "react";
+import toast, {Toaster} from "react-hot-toast";
+import {poiTypeKey} from "./data/poiTypes.ts";
+import {supabase} from "./config/supabase.ts";
+import {Button, Input, Modal} from "antd";
 import Cookies from "js-cookie";
 
 export interface Poi {
@@ -13,6 +13,7 @@ export interface Poi {
     latLng: number[];
     poiType: poiTypeKey;
     todayDate: string;
+    poiGang: string;
 }
 
 const isDevMode = import.meta.env.MODE === "development";
@@ -23,8 +24,9 @@ const App = () => {
     const [poiList, setPoiList] = useState<Poi[]>([]);
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
     const [showDropPoints, setShowDropPoints] = useState(true);
+    const [gangs, setGangs] = useState<any[]>([]);
+    const [filteredGangs, setFilteredGangs] = useState("");
 
-    // Password modal state
     const [isModalVisible, setIsModalVisible] = useState(true);
     const [enteredPassword, setEnteredPassword] = useState("");
     const [allowed, setAllowed] = useState(false);
@@ -39,6 +41,18 @@ const App = () => {
         }
     }, []);
 
+    // Add gangs to state
+    useEffect(() => {
+        (async () => {
+            const {data: gangs} = await supabase
+                .from('gangs')
+                .select('*')
+            //@ts-ignore
+            setGangs(gangs)
+        })()
+    }, [])
+
+
     const handleCheckPassword = async () => {
         if (!enteredPassword.trim()) {
             toast.error("Please enter the password.");
@@ -47,7 +61,7 @@ const App = () => {
 
         setLoading(true);
 
-        const { data, error } = await supabase
+        const {data, error} = await supabase
             .from("enteringPw")
             .select("password")
             .single();
@@ -64,7 +78,7 @@ const App = () => {
             toast.success("Access granted!");
             setAllowed(true);
             setIsModalVisible(false);
-            Cookies.set("accessGranted", "true", { expires: 1 }); // Expires in 1 day
+            Cookies.set("accessGranted", "true", {expires: 1}); // Expires in 1 day
         } else {
             toast.error("Incorrect password!");
         }
@@ -74,7 +88,7 @@ const App = () => {
         if (!allowed) return;
 
         (async () => {
-            const { data: pois } = await supabase.from("pois").select("*");
+            const {data: pois} = await supabase.from("pois").select("*");
 
             //@ts-ignore
             setPoiList(pois);
@@ -116,8 +130,12 @@ const App = () => {
                         setShowTerritory={setShowTerritory}
                         setIsClick={setIsClick}
                         isClick={isClick}
+                        gangs={gangs}
+                        setFilteredGangs={setFilteredGangs}
                     />
                     <Map
+                        gangs={gangs}
+                        filteredGangs={filteredGangs}
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
                         showTerritory={showTerritory}
@@ -129,7 +147,7 @@ const App = () => {
                 </main>
             )}
 
-            <Toaster position="top-center" reverseOrder={false} />
+            <Toaster position="top-center" reverseOrder={false}/>
         </>
     );
 };

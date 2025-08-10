@@ -14,10 +14,21 @@ interface NewPOIState {
     poiName: string;
     poiType: poiTypeKey;
     adderName: string;
+    poiGang: string;
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode, showDropPoints}: {
+const Map = ({
+                 isClick,
+                 setIsClick,
+                 poiList,
+                 setPoiList,
+                 showTerritory,
+                 isDevMode,
+                 showDropPoints,
+                 filteredGangs,
+                 gangs,
+             }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
@@ -25,14 +36,17 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
     showTerritory: boolean
     isDevMode: boolean
     showDropPoints: boolean
+    filteredGangs: string
+    gangs: any[]
 }) => {
     const [deletePw, setDeletePw] = useState("");
     const mapRef = useRef<any>(null);
 
-    const [{poiName, poiType, adderName, latLng}, setNewPOI] = useState<NewPOIState>({
+    const [{poiName, poiType, adderName, latLng, poiGang}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
         poiType: "drug",
         poiName: "",
+        poiGang: "",
         latLng: [0, 0],
     });
 
@@ -68,6 +82,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
             adderName,
             latLng,
             todayDate,
+            poiGang: poiGang || "null",
         };
 
         try {
@@ -148,6 +163,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
         return null;
     };
 
+
     const PoiMarkers = () => {
         const filteredPoiList = poiList.filter(poi =>
             poi.poiType === "dropPoints" ? showDropPoints : true
@@ -180,7 +196,12 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                                     </p>
                                     <p className='!m-0'><span className='font-bold'>Added by:</span> {poi.adderName}</p>
                                     <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
-                                    {(poi.poiType === "dropPoints" && isDevMode) && (<Button
+                                    {Boolean(poi.poiGang) && (
+                                        <p className='!m-0'><span
+                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => gangDetails.id === 1).name}
+                                        </p>
+                                    )}
+                                    {(poi.poiType !== "dropPoints" || isDevMode) && (<Button
                                             className="text-sm w-full"
                                             type="primary"
                                             danger
@@ -237,7 +258,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     <ImageOverlay url={imageUrl} bounds={bounds}/>
                     <MapClickHandler/>
                     <PoiMarkers/>
-                    {showTerritory && <Territories isDevMode={isDevMode}/>}
+                    {showTerritory && <Territories filteredGangs={filteredGangs} isDevMode={isDevMode}/>}
                 </MapContainer>
 
                 {/* Add POI Modal */}
@@ -258,6 +279,24 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">POI Name</label>
                                 <Input name="poiName" onChange={handleInputChange} placeholder="e.g. Matthews"/>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">POI's Gang</label>
+                                <Select
+                                    placeholder="Select a gang"
+                                    defaultValue="null"
+                                    onChange={(value) => {
+                                        setNewPOI(prev => ({...prev, "poiGang": value} as NewPOIState));
+                                    }}
+                                    style={{width: 200}}
+                                >
+                                    <Select.Option value="null">None</Select.Option>
+                                    {gangs.map((gang) => (
+                                        <Select.Option value={gang.id}
+                                                       style={{color: gang.color}}>{gang.name}</Select.Option>
+                                    ))}
+                                </Select>
                             </div>
 
                             <div className="flex flex-col gap-1">
