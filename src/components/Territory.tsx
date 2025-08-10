@@ -2,6 +2,7 @@ import {LayerGroup, Popup, Rectangle, useMapEvents} from 'react-leaflet';
 import {useEffect, useState} from 'react';
 import PaintControls from './PaintControls';
 import {supabase} from "../config/supabase.ts";
+import toast from "react-hot-toast";
 
 export interface PixelTerritory {
     id: string;
@@ -47,31 +48,59 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         })()
     }, []);
 
-    const generateStaticData = () => {
+    const generateStaticData = async () => {
         if (!selectedTerritoryId) {
-            alert('No territory selected!');
+            toast.error('No territory selected!');
             return;
         }
         const territory = territories.find(t => t.id === selectedTerritoryId);
 
         if (!territory) {
-            alert('Selected territory not found!');
+            toast.error('Selected territory not found!');
             return;
         }
 
-        const staticData = `{
-    id: '${territory.id}',
-    name: '${territory.name.replace(/'/g, "\\'")}',
-    color: '${territory.color}',
-    boxes: ${JSON.stringify(territory.boxes, null, 4).replace(/"bounds"/g, 'bounds')}
-}`;
 
-        navigator.clipboard.writeText(staticData).then(() => {
-            alert('Static data for selected territory copied to clipboard! Paste it into your territories file.');
-        }).catch(err => {
-            console.error('Failed to copy:', err);
-            alert('Failed to copy data');
-        });
+        try {
+
+
+            const {data: gangs} = await supabase.from('gangs').select('*').eq('id', territory.id);
+
+
+
+            if (!gangs) {
+                // Prepare the data object for update
+                const dataToAdd = {
+                    color: territory.color,
+                    boxes: territory.boxes,
+                    name: territory.name.replace(/'/g, "\\'"),
+                };
+
+                await supabase
+                    .from('gangs')
+                    .insert([
+                        dataToAdd,
+                    ])
+            } else {
+                // Prepare the data object for update
+                const dataToUpdate = {
+                    name: territory.name.replace(/'/g, "\\'"),
+                    color: territory.color,
+                    boxes: territory.boxes,
+                };
+                console.log(dataToUpdate);
+
+                await supabase
+                    .from('gangs')
+                    .update(dataToUpdate)
+                    .eq('id', territory.id)
+
+            }
+            toast.success("Territory updated/added!");
+        } catch {
+            toast.error("Failed to update territory!");
+        }
+
     };
 
     // Helper: Add multiple boxes in a horizontal line from startX to endX at fixed y
