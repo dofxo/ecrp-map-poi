@@ -142,7 +142,7 @@ const App = () => {
                         poiList={
                             filteredGangs === "all"
                                 ? poiList
-                                : poiList.filter((poi) => poi.poiGang === filteredGangs)
+                                : poiList.filter((poi) =>  poi.poiType === "dropPoints" || poi.poiGang === filteredGangs)
                         }
                         setPoiList={setPoiList}
                         setIsClick={setIsClick}

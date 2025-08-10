@@ -305,8 +305,8 @@ console.log(poiDetails);
                                     onChange={(value: poiTypeKey) => handleInputChange(value)}
                                     defaultValue="drug"
                                     options={(Object.keys(poiTypes) as poiTypeKey[])
-                                        .filter((key) => isDevMode || key !== "dropPoints")
-                                        .map((key) => ({
+                                        .filter(key => isDevMode || (key !== "dropPoints" && key !== "gangHQ"))
+                                        .map(key => ({
                                             value: key,
                                             label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
                                         }))
