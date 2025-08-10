@@ -79,15 +79,6 @@ const PaintControls: React.FC<PaintControlsProps> = ({
 
                         {paintMode.mode === 'edit' && selectedTerritory && (
                             <div className="space-y-2">
-                                <div>
-                                    <label className="block text-sm mb-1">Gang Name:</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={selectedTerritory.gang}
-                                        onBlur={e => handlePropertyChange('gang', e.target.value)}
-                                        className="w-full p-1 border text-sm"
-                                    />
-                                </div>
                                 <div className="flex items-center">
                                     <label className="text-sm mr-2">Color:</label>
                                     <input
