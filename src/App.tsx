@@ -25,7 +25,7 @@ const App = () => {
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
     const [showDropPoints, setShowDropPoints] = useState(true);
     const [gangs, setGangs] = useState<any[]>([]);
-    const [filteredGangs, setFilteredGangs] = useState("");
+    const [filteredGangs, setFilteredGangs] = useState("all");
 
     const [isModalVisible, setIsModalVisible] = useState(true);
     const [enteredPassword, setEnteredPassword] = useState("");
@@ -139,7 +139,11 @@ const App = () => {
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
                         showTerritory={showTerritory}
-                        poiList={poiList}
+                        poiList={
+                            filteredGangs === "all"
+                                ? poiList
+                                : poiList.filter((poi) => poi.poiGang === filteredGangs)
+                        }
                         setPoiList={setPoiList}
                         setIsClick={setIsClick}
                         isClick={isClick}
