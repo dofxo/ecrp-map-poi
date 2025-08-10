@@ -6,7 +6,6 @@ interface PaintControlsProps {
     setPaintMode: React.Dispatch<React.SetStateAction<PaintMode>>;
     selectedTerritoryId: string | null;
     territories: PixelTerritory[];
-    startPainting: (mode: 'add' | 'remove' | 'edit') => void;
     stopPainting: () => void;
     createNewTerritory: () => void;
     generateStaticData: () => void;
@@ -19,7 +18,6 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                                                          setPaintMode,
                                                          selectedTerritoryId,
                                                          territories,
-                                                         startPainting,
                                                          stopPainting,
                                                          createNewTerritory,
                                                          generateStaticData,
@@ -141,9 +139,18 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                                 <label className="text-sm mr-2">Color:</label>
                                 <input
                                     type="color"
-                                    defaultValue={selectedTerritory.color}
+                                    value={selectedTerritory.color}
                                     onChange={(e) => handlePropertyChange('color', e.target.value)}
                                     className="w-8 h-8"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm mr-2">Gang Name:</label>
+                                <input
+                                    type="text"
+                                    value={selectedTerritory.name}
+                                    onChange={(e) => handlePropertyChange('name', e.target.value)}
+                                    className="w-full p-1 border text-sm"
                                 />
                             </div>
                         </div>
@@ -159,8 +166,8 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                                     className="mr-2"
                                 />
                                 <span className="text-sm">
-                  {paintMode.mode === 'add' ? 'Paint Color' : 'Remove Color'}
-                </span>
+                                    {paintMode.mode === 'add' ? 'Paint Color' : 'Remove Color'}
+                                </span>
                             </div>
 
                             <div>
@@ -219,8 +226,7 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                                     mode: 'edit',
                                     color: selectedTerritory?.color || '#FF0000',
                                     boxSize: 10,
-                                    // @ts-ignore
-                                    gangName: selectedTerritory?.gang || 'New Gang',
+                                    gangName: selectedTerritory?.name || 'New Gang',
                                 });
                             }}
                             className={`p-1 text-sm ${
@@ -259,16 +265,16 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                         onClick={generateStaticData}
                         className="w-full bg-purple-500 text-white p-1 text-sm"
                     >
-                        Update Gang
+                        Update Data
                     </button>
                 </div>
             ) : (
-                <div className="space-y-2">
+                <div>
                     <button
-                        onClick={() => startPainting('add')}
-                        className="w-full bg-green-500 text-white p-1 text-sm"
+                        onClick={() => setPaintMode((prev) => ({ ...prev, active: true, mode: 'add' }))}
+                        className="w-full bg-green-500 text-white p-2 text-lg"
                     >
-                        Enter Edit Mode
+                        Start Painting
                     </button>
                 </div>
             )}

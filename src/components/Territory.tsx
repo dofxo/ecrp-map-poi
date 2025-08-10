@@ -60,13 +60,8 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
             return;
         }
 
-
         try {
-
-
             const {data: gangs} = await supabase.from('gangs').select('*').eq('id', territory.id);
-
-
 
             if (!gangs) {
                 // Prepare the data object for update
@@ -246,16 +241,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         }
     });
 
-    const startPainting = (mode: PaintModeType) => {
-        setPaintMode(prev => ({
-            ...prev,
-            active: true,
-            mode: mode,
-            ...(mode === 'edit' && selectedTerritoryId ? {
-                color: territories.find(t => t.id === selectedTerritoryId)?.color || prev.color
-            } : {})
-        }));
-    };
 
     const stopPainting = () => {
         setPaintMode(prev => ({...prev, active: false}));
@@ -335,7 +320,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                 <PaintControls
                     paintMode={paintMode}
                     setPaintMode={setPaintMode}
-                    startPainting={startPainting}
                     stopPainting={stopPainting}
                     createNewTerritory={createNewTerritory}
                     generateStaticData={generateStaticData}
