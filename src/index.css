@@ -68,3 +68,7 @@ body {
 .leaflet-bottom.leaflet-right {
     display: none !important;
 }
+
+.ant-select {
+    width: unset !important;
+}

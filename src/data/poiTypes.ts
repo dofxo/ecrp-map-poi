@@ -1,4 +1,4 @@
-export type poiTypeKey = 'drug' | 'businessman' | 'car' | 'restaurant' | 'police' | 'dropPoints';
+export type poiTypeKey = 'drug' | 'businessman' | 'car' | 'restaurant' | 'police' | 'dropPoints' ;
 
 export interface DealerType {
     name: string;

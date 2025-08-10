@@ -13,6 +13,7 @@ export interface Poi {
     latLng: number[];
     poiType: poiTypeKey;
     todayDate: string;
+    poiGang: string;
 }
 
 const isDevMode = import.meta.env.MODE === "development";
@@ -136,6 +137,7 @@ const App = () => {
                         setFilteredGangs={setFilteredGangs}
                     />
                     <Map
+                        gangs={gangs}
                         filteredGangs={filteredGangs}
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
