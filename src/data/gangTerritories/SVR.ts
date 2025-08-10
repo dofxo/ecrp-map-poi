@@ -3,7 +3,6 @@ import type {PixelTerritory} from "../../components/Territory.tsx";
 export const SVR: PixelTerritory ={
     id: 'custom-1754735511199',
     name: 'SVR',
-    gang: 'SVR',
     color: '#96fc96',
     boxes: [
     {

@@ -3,7 +3,6 @@ import type {PixelTerritory} from "../../components/Territory.tsx";
 export const alliance: PixelTerritory = {
     id: 'custom-1754646236297',
     name: 'Alliance',
-    gang: 'Alliance',
     color: '#8283e7',
     boxes: [
     {

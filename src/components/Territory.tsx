@@ -6,7 +6,6 @@ import {defaultTerritories} from "../data/gangTerritories/gangTerritories.ts";
 export interface PixelTerritory {
     id: string;
     name: string;
-    gang: string;
     color: string;
     boxes: {
         bounds: [[number, number], [number, number]];
@@ -53,7 +52,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         const staticData = `{
     id: '${territory.id}',
     name: '${territory.name.replace(/'/g, "\\'")}',
-    gang: '${territory.gang.replace(/'/g, "\\'")}',
     color: '${territory.color}',
     boxes: ${JSON.stringify(territory.boxes, null, 4).replace(/"bounds"/g, 'bounds')}
 }`;
@@ -232,7 +230,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
         const newTerritory: PixelTerritory = {
             id: newId,
             name: paintMode.gangName,
-            gang: paintMode.gangName,
             color: paintMode.color,
             boxes: []
         };
@@ -286,7 +283,6 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
                                     {territory.name}
                                 </h3>
                                 <hr/>
-                                <p><strong>Gang:</strong> {territory.gang}</p>
                                 <p><strong>Extra details:</strong> details here</p>
                             </div>
                         </Popup>
