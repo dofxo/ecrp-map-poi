@@ -1,7 +1,7 @@
 import {LayerGroup, Popup, Rectangle, useMapEvents} from 'react-leaflet';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import PaintControls from './PaintControls';
-import {defaultTerritories} from "../data/gangTerritories/gangTerritories.ts";
+import {supabase} from "../config/supabase.ts";
 
 export interface PixelTerritory {
     id: string;
@@ -23,7 +23,7 @@ export interface PaintMode {
 }
 
 const Territories = ({isDevMode}: { isDevMode: boolean }) => {
-    const [territories, setTerritories] = useState<PixelTerritory[]>(defaultTerritories);
+    const [territories, setTerritories] = useState<PixelTerritory[]>([]);
     const [paintMode, setPaintMode] = useState<PaintMode>({
         active: false,
         color: '#FF0000',
@@ -36,6 +36,16 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
     const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
 
     const [lastClickedPos, setLastClickedPos] = useState<{ x: number | null, y: number | null }>({x: null, y: null});
+
+    useEffect(() => {
+        (async () => {
+            const {data: gangs} = await supabase
+                .from('gangs')
+                .select('*')
+            //@ts-ignore
+            setTerritories(gangs)
+        })()
+    }, []);
 
     const generateStaticData = () => {
         if (!selectedTerritoryId) {
