@@ -17,7 +17,7 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
-const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode, showDropPoints}: {
+const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode, showDropPoints, filteredGangs}: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
     poiList: Poi[],
@@ -25,6 +25,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
     showTerritory: boolean
     isDevMode: boolean
     showDropPoints: boolean
+    filteredGangs: string
 }) => {
     const [deletePw, setDeletePw] = useState("");
     const mapRef = useRef<any>(null);
@@ -237,7 +238,7 @@ const Map = ({isClick, setIsClick, poiList, setPoiList, showTerritory, isDevMode
                     <ImageOverlay url={imageUrl} bounds={bounds}/>
                     <MapClickHandler/>
                     <PoiMarkers/>
-                    {showTerritory && <Territories isDevMode={isDevMode}/>}
+                    {showTerritory && <Territories filteredGangs={filteredGangs} isDevMode={isDevMode}/>}
                 </MapContainer>
 
                 {/* Add POI Modal */}

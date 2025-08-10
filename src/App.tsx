@@ -23,8 +23,9 @@ const App = () => {
     const [poiList, setPoiList] = useState<Poi[]>([]);
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
     const [showDropPoints, setShowDropPoints] = useState(true);
+    const [gangs,setGangs] = useState<any[]>([]);
+    const [filteredGangs, setFilteredGangs] = useState("");
 
-    // Password modal state
     const [isModalVisible, setIsModalVisible] = useState(true);
     const [enteredPassword, setEnteredPassword] = useState("");
     const [allowed, setAllowed] = useState(false);
@@ -38,6 +39,21 @@ const App = () => {
             setIsModalVisible(false);
         }
     }, []);
+
+    // Add gangs to state
+    useEffect(() => {
+        (async () => {
+            const { data: gangs } = await supabase
+                .from('gangs')
+                .select('*')
+            //@ts-ignore
+            setGangs(gangs)
+        })()
+    })
+
+    useEffect(() => {
+
+    }, [filteredGangs]);
 
     const handleCheckPassword = async () => {
         if (!enteredPassword.trim()) {
@@ -116,8 +132,11 @@ const App = () => {
                         setShowTerritory={setShowTerritory}
                         setIsClick={setIsClick}
                         isClick={isClick}
+                        gangs={gangs}
+                        setFilteredGangs={setFilteredGangs}
                     />
                     <Map
+                        filteredGangs={filteredGangs}
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
                         showTerritory={showTerritory}

@@ -22,7 +22,7 @@ export interface PaintMode {
     mode: PaintModeType;
 }
 
-const Territories = ({isDevMode}: { isDevMode: boolean }) => {
+const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredGangs: string }) => {
     const [territories, setTerritories] = useState<PixelTerritory[]>([]);
     const [paintMode, setPaintMode] = useState<PaintMode>({
         active: false,
@@ -250,7 +250,9 @@ const Territories = ({isDevMode}: { isDevMode: boolean }) => {
 
     return (
         <>
-            {territories.map((territory) => (
+            {territories.filter(t =>
+                filteredGangs === 'all' || Number(t.id) === Number(filteredGangs)
+            ).map((territory) => (
                 <LayerGroup key={territory.id}>
                     {territory.boxes.map((box, index) => (
                         <Rectangle
