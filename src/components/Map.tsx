@@ -163,6 +163,7 @@ const Map = ({
         return null;
     };
 
+
     const PoiMarkers = () => {
         const filteredPoiList = poiList.filter(poi =>
             poi.poiType === "dropPoints" ? showDropPoints : true
@@ -195,7 +196,12 @@ const Map = ({
                                     </p>
                                     <p className='!m-0'><span className='font-bold'>Added by:</span> {poi.adderName}</p>
                                     <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
-                                    {(poi.poiType === "dropPoints" && isDevMode) && (<Button
+                                    {Boolean(poi.poiGang) && (
+                                        <p className='!m-0'><span
+                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => gangDetails.id === 1).name}
+                                        </p>
+                                    )}
+                                    {(poi.poiType !== "dropPoints" || isDevMode) && (<Button
                                             className="text-sm w-full"
                                             type="primary"
                                             danger
