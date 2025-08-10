@@ -161,6 +161,7 @@ const PaintControls: React.FC<PaintControlsProps> = ({
                                         mode: 'edit',
                                         color: selectedTerritory?.color || '#FF0000',
                                         boxSize: 10,
+                                        //@ts-ignore
                                         gangName: selectedTerritory?.gang || 'New Gang'
                                     });
                                 }}
