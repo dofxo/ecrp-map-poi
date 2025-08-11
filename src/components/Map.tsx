@@ -66,7 +66,6 @@ const Map = ({
 
 
     const showModal = () => setIsModalOpen(true);
-    const handlePwDelete = (e: React.ChangeEvent<HTMLInputElement>) => setDeletePw(e.target.value);
     const showDeleteModal = (index: number) => {
         setPoiToDelete(index);
         setIsDeleteModalOpen(true);
@@ -111,7 +110,6 @@ console.log(poiDetails);
         //@ts-ignore
         if (pw[0].pw !== deletePw) {
             setDeletePw("");
-            setIsDeleteModalOpen(false);
             return toast.error("Incorrect password");
         }
 
@@ -334,7 +332,8 @@ console.log(poiDetails);
                             <p><strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}</p>
                             <p className="flex items-center gap-2">
                                 <strong>Password:</strong>
-                                <Input type="password" onChange={handlePwDelete} placeholder="Enter password"/>
+                                <Input type="password" onChange={(e) => setDeletePw(e.target.value)}
+                                       placeholder="Enter password"/>
                             </p>
                         </div>
                     )}
