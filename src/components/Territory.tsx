@@ -218,25 +218,20 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                 }
                 setLastClickedPos({x: snappedLng, y: snappedLat});
             } else if (paintMode.mode === 'remove') {
-                const updatedBoxes = territory.boxes.filter(b =>
-                    !(b.bounds[0][0] === clickedBox.bounds[0][0] &&
-                        b.bounds[0][1] === clickedBox.bounds[0][1])
+                const updatedBoxes = territory.boxes.filter(b => {
+                    const [topLeft, bottomRight] = b.bounds;
+                    return !(lat >= topLeft[0] &&
+                        lat <= bottomRight[0] &&
+                        lng >= topLeft[1] &&
+                        lng <= bottomRight[1]);
+                });
+
+                const updatedTerritory = { ...territory, boxes: updatedBoxes };
+                setTerritories(prev =>
+                    prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
                 );
 
-                if (updatedBoxes.length === 0) {
-                    setTerritories(prev => prev.filter(t => t.id !== territory.id));
-                    setSelectedTerritoryId(null);
-                    setPopupPosition(null);
-                } else {
-                    const updatedTerritory = {
-                        ...territory,
-                        boxes: updatedBoxes
-                    };
-                    setTerritories(prev =>
-                        prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
-                    );
-                }
-                setLastClickedPos({x: snappedLng, y: snappedLat});
+                setLastClickedPos({x: lng, y: lat});
             }
         }
     });
