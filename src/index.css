@@ -72,3 +72,6 @@ body {
 .ant-select {
     width: unset !important;
 }
+.leaflet-control input, .leaflet-control select, .leaflet-control button {
+    margin: unset !important;
+}
