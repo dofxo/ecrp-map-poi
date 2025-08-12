@@ -45,7 +45,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
     // Add these new states near the top of the component where other states are declared
     const [enteredPassword, setEnteredPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [allowed, setAllowed] = useState(false);
 
     // Add new state for the edit modal
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -298,7 +297,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         //@ts-ignore
         if (data?.pw === enteredPassword) {
             toast.success("Access granted!");
-            setAllowed(true);
             setIsModalVisible(false);
             setIsEditModalVisible(true);
 
