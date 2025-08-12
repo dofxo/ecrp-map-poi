@@ -78,7 +78,7 @@ const App = () => {
             toast.success("Access granted!");
             setAllowed(true);
             setIsModalVisible(false);
-            Cookies.set("accessGranted", "true", {expires: 1}); // Expires in 1 day
+            Cookies.set("accessGranted", "true", {expires: 30}); // Expires in 30 day
         } else {
             toast.error("Incorrect password!");
         }
