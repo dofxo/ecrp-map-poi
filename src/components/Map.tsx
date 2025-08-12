@@ -170,6 +170,7 @@ console.log(poiDetails);
             <>
                 {filteredPoiList.map((poi, index) => {
                     const dealerType = poi.poiType as poiTypeKey;
+
                     // @ts-ignore
                     const emojiIcon = L.divIcon({
                         html: `<div style="font-size: 24px">${poiTypes[dealerType]?.icon}</div>`,
@@ -196,7 +197,7 @@ console.log(poiDetails);
                                     <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
                                     {Boolean(poi.poiGang) && (
                                         <p className='!m-0'><span
-                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => gangDetails.id === 1)?.name || ""}
+                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => +gangDetails.id === +poi.poiGang)?.name || ""}
                                         </p>
                                     )}
                                     {(poi.poiType !== "dropPoints" || isDevMode) && (<Button
