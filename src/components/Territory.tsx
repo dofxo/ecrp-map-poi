@@ -3,6 +3,9 @@ import {useEffect, useState} from 'react';
 import PaintControls from './PaintControls';
 import {supabase} from "../config/supabase.ts";
 import toast from "react-hot-toast";
+import {Button, Input, Modal} from "antd";
+// @ts-ignore
+import Cookies from 'js-cookie';
 
 export interface PixelTerritory {
     id: string;
@@ -35,8 +38,21 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
 
     const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     const [lastClickedPos, setLastClickedPos] = useState<{ x: number | null, y: number | null }>({x: null, y: null});
+
+    // Add these new states near the top of the component where other states are declared
+    const [enteredPassword, setEnteredPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [allowed, setAllowed] = useState(false);
+
+    // Add new state for the edit modal
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [editingTerritory, setEditingTerritory] = useState<{ name: string; color: string }>({
+        name: '',
+        color: ''
+    });
 
     useEffect(() => {
         (async () => {
@@ -226,7 +242,7 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                         lng <= bottomRight[1]);
                 });
 
-                const updatedTerritory = { ...territory, boxes: updatedBoxes };
+                const updatedTerritory = {...territory, boxes: updatedBoxes};
                 setTerritories(prev =>
                     prev.map(t => t.id === updatedTerritory.id ? updatedTerritory : t)
                 );
@@ -256,6 +272,83 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         setSelectedTerritoryId(newId);
         setLastClickedPos({x: null, y: null});
     };
+
+    // Add the password check handler
+    const handleCheckPassword = async () => {
+        if (!enteredPassword.trim()) {
+            toast.error("Please enter the password.");
+            return;
+        }
+
+        setLoading(true);
+
+        const {data, error} = await supabase
+            .from("pw")
+            .select("pw")
+            .single();
+
+        setLoading(false);
+
+        if (error) {
+            toast.error("Error fetching password from server.");
+            console.error(error);
+            return;
+        }
+
+        //@ts-ignore
+        if (data?.pw === enteredPassword) {
+            toast.success("Access granted!");
+            setAllowed(true);
+            setIsModalVisible(false);
+            setIsEditModalVisible(true);
+
+            // Set initial values for editing
+            const territory = territories.find(t => t.id === selectedTerritoryId);
+            if (territory) {
+                setEditingTerritory({
+                    name: territory.name,
+                    color: territory.color
+                });
+            }
+
+            Cookies.set("accessGranted", "true", {expires: 30}); // Expires in 30 days
+        } else {
+            toast.error("Incorrect password!");
+        }
+    };
+
+    // Add handler for updating territory
+    const handleUpdateTerritory = async () => {
+        if (!selectedTerritoryId) return;
+
+        try {
+            const {error} = await supabase
+                .from('gangs')
+                .update({
+                    name: editingTerritory.name,
+                    color: editingTerritory.color
+                })
+                .eq('id', selectedTerritoryId);
+
+            if (error) throw error;
+
+            // Update local state
+            setTerritories(prev =>
+                prev.map(t => t.id === selectedTerritoryId
+                    ? {...t, ...editingTerritory}
+                    : t
+                )
+            );
+
+            toast.success("Territory updated successfully!");
+            setIsEditModalVisible(false);
+            setPopupPosition(null);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update territory!");
+        }
+    };
+
 
     return (
         <>
@@ -296,7 +389,7 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                                 setPopupPosition(null);
                             }}
                         >
-                            <div>
+                            <div className="flex flex-col gap-2 p-2">
                                 <h3
                                     className="text-center text-2xl font-bold"
                                     style={{color: territory.color}}
@@ -304,12 +397,83 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                                     {territory.name}
                                 </h3>
                                 <hr/>
-                                <p><strong>Extra details:</strong> details here</p>
+                                {/*<p><strong>Extra details:</strong> details here</p>*/}
+                                <Button type="primary" onClick={() => setIsModalVisible(true)}>Edit Gang</Button>
                             </div>
+
                         </Popup>
                     )}
                 </LayerGroup>
             ))}
+
+            <Modal
+                title="Enter Access Password"
+                open={isModalVisible}
+                closable={false}
+                maskClosable={false}
+                footer={[
+                    <Button
+                        key="submit"
+                        type="primary"
+                        loading={loading}
+                        onClick={handleCheckPassword}
+                    >
+                        Submit
+                    </Button>,
+                ]}
+            >
+                <Input.Password
+                    placeholder="Password"
+                    value={enteredPassword}
+                    onChange={(e) => setEnteredPassword(e.target.value)}
+                    onPressEnter={handleCheckPassword}
+                />
+            </Modal>
+
+            {/* Add this modal component after the password modal */}
+            <Modal
+                title="Edit Gang"
+                open={isEditModalVisible}
+                onCancel={() => setIsEditModalVisible(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setIsEditModalVisible(false)}>
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        onClick={handleUpdateTerritory}
+                    >
+                        Update
+                    </Button>
+                ]}
+            >
+                <div className="flex flex-col gap-4">
+                    <div>
+                        <label className="block mb-2">Gang Name</label>
+                        <Input
+                            value={editingTerritory.name}
+                            onChange={(e) => setEditingTerritory(prev => ({
+                                ...prev,
+                                name: e.target.value
+                            }))}
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2">Gang Color</label>
+                        <Input
+                            type="color"
+                            value={editingTerritory.color}
+                            onChange={(e) => setEditingTerritory(prev => ({
+                                ...prev,
+                                color: e.target.value
+                            }))}
+                            style={{width: '100%', height: '40px'}}
+                        />
+                    </div>
+                </div>
+            </Modal>
+
 
             {isDevMode && (
                 <PaintControls
