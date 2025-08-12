@@ -11,6 +11,7 @@ export interface PixelTerritory {
     id: string;
     name: string;
     color: string;
+    updatedBy?: string;
     boxes: {
         bounds: [[number, number], [number, number]];
     }[];
@@ -48,9 +49,15 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
 
     // Add new state for the edit modal
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [editingTerritory, setEditingTerritory] = useState<{ name: string; color: string }>({
+    // Update the editingTerritory state type and initial value
+    const [editingTerritory, setEditingTerritory] = useState<{
+        name: string;
+        color: string;
+        updatedBy: string;
+    }>({
         name: '',
-        color: ''
+        color: '',
+        updatedBy: ''
     });
 
     useEffect(() => {
@@ -302,10 +309,12 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
 
             // Set initial values for editing
             const territory = territories.find(t => t.id === selectedTerritoryId);
+            // Update the section where you set initial values for editing (in handleCheckPassword)
             if (territory) {
                 setEditingTerritory({
                     name: territory.name,
-                    color: territory.color
+                    color: territory.color,
+                    updatedBy: territory.updatedBy || '' // Handle case where updatedBy might not exist yet
                 });
             }
 
@@ -316,15 +325,22 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
     };
 
     // Add handler for updating territory
+    // Update the handleUpdateTerritory function
     const handleUpdateTerritory = async () => {
         if (!selectedTerritoryId) return;
+
+        if (!editingTerritory.updatedBy.trim()) {
+            toast.error("Please enter your name in the 'Updated By' field");
+            return;
+        }
 
         try {
             const {error} = await supabase
                 .from('gangs')
                 .update({
                     name: editingTerritory.name,
-                    color: editingTerritory.color
+                    color: editingTerritory.color,
+                    updatedBy: editingTerritory.updatedBy
                 })
                 .eq('id', selectedTerritoryId);
 
@@ -395,7 +411,7 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                                     {territory.name}
                                 </h3>
                                 <hr/>
-                                {/*<p><strong>Extra details:</strong> details here</p>*/}
+                                <p><strong>Updated By:</strong> {territory.updatedBy}</p>
                                 <Button type="primary" onClick={() => setIsModalVisible(true)}>Edit Gang</Button>
                             </div>
 
@@ -467,6 +483,17 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                                 color: e.target.value
                             }))}
                             style={{width: '100%', height: '40px'}}
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2">Updated By</label>
+                        <Input
+                            placeholder="Enter your name"
+                            value={editingTerritory.updatedBy}
+                            onChange={(e) => setEditingTerritory(prev => ({
+                                ...prev,
+                                updatedBy: e.target.value
+                            }))}
                         />
                     </div>
                 </div>
