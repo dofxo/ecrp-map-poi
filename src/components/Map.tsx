@@ -197,7 +197,7 @@ console.log(poiDetails);
                                     <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
                                     {Boolean(poi.poiGang) && (
                                         <p className='!m-0'><span
-                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => +gangDetails.id === +poi.poiGang)?.name || ""}
+                                            className='font-bold'>Gang:</span> {gangs.find(gangDetails => +gangDetails.id === +poi.poiGang)?.name || "N/A"}
                                         </p>
                                     )}
                                     {(poi.poiType !== "dropPoints" || isDevMode) && (<Button
