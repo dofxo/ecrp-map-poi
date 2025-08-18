@@ -326,8 +326,8 @@ const Map = ({
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiId !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded flex flex-col gap-5">
-                            <p><strong>Name:</strong> {currentPoi.poiName}</p>
-                            <p><strong>Type:</strong> {poiTypes[currentPoi.poiType as poiTypeKey]?.name}</p>
+                            <p><strong>Name:</strong> {currentPoi?.poiName}</p>
+                            <p><strong>Type:</strong> {poiTypes[currentPoi?.poiType as poiTypeKey]?.name}</p>
                             <p className="flex items-center gap-2">
                                 <strong>Password:</strong>
                                 <Input type="password" onChange={(e) => setDeletePw(e.target.value)}
