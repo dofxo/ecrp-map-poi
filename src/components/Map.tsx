@@ -96,7 +96,6 @@ const Map = ({
 
             setIsModalOpen(false);
             setIsClick(false);
-console.log(poiDetails);
             toast.success("POI saved!");
 
         } catch {
