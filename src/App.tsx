@@ -14,6 +14,7 @@ export interface Poi {
     poiType: poiTypeKey;
     todayDate: string;
     poiGang: string;
+    id?:string
 }
 
 const isDevMode = import.meta.env.MODE === "development";

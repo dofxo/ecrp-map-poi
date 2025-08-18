@@ -52,7 +52,6 @@ const Map = ({
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [poiToDelete, setPoiToDelete] = useState<number | null>(null);
 
     const [poiId, setPoiId] = useState<string | null>(null);
 
@@ -66,8 +65,7 @@ const Map = ({
 
 
     const showModal = () => setIsModalOpen(true);
-    const showDeleteModal = (index: number) => {
-        setPoiToDelete(index);
+    const showDeleteModal = () => {
         setIsDeleteModalOpen(true);
     };
 
@@ -117,18 +115,16 @@ const Map = ({
             .delete()
             .eq('id', poiId)
 
-        if (poiToDelete !== null) {
-            setPoiList(poiList.filter((_, i) => i !== poiToDelete));
+        if (poiId !== null) {
+            setPoiList(poiList.filter((poi) => poi.id !== poiId));
             toast.success("POI removed!");
         }
         setIsDeleteModalOpen(false);
-        setPoiToDelete(null);
         setPoiId(null);
     };
 
     const handleCancelDelete = () => {
         setIsDeleteModalOpen(false);
-        setPoiToDelete(null);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | poiTypeKey) => {
@@ -206,7 +202,7 @@ const Map = ({
                                             onClick={() => {
                                                 //@ts-ignore
                                                 setPoiId(poi.id);
-                                                showDeleteModal(index)
+                                                showDeleteModal()
                                             }}
                                             icon={<span>🗑️</span>}
                                         >
@@ -222,6 +218,8 @@ const Map = ({
             </>
         );
     };
+
+    const currentPoi = poiList.find(poi => poi.id === poiId);
 
     return (
         <div style={{
@@ -326,10 +324,10 @@ const Map = ({
                     cancelText="Cancel"
                 >
                     <p>Are you sure you want to delete this point of interest?</p>
-                    {poiToDelete !== null && (
+                    {poiId !== null && (
                         <div className="mt-4 p-2 bg-gray-100 rounded flex flex-col gap-5">
-                            <p><strong>Name:</strong> {poiList[poiToDelete].poiName}</p>
-                            <p><strong>Type:</strong> {poiTypes[poiList[poiToDelete].poiType as poiTypeKey]?.name}</p>
+                            <p><strong>Name:</strong> {currentPoi.poiName}</p>
+                            <p><strong>Type:</strong> {poiTypes[currentPoi.poiType as poiTypeKey]?.name}</p>
                             <p className="flex items-center gap-2">
                                 <strong>Password:</strong>
                                 <Input type="password" onChange={(e) => setDeletePw(e.target.value)}
