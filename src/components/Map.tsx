@@ -18,6 +18,13 @@ interface NewPOIState {
     latLng: [number, number];
 }
 
+interface EditPOIState {
+    poiName: string;
+    poiType: poiTypeKey;
+    adderName: string;
+    poiGang: string;
+}
+
 const Map = ({
                  isClick,
                  setIsClick,
@@ -40,6 +47,16 @@ const Map = ({
     gangs: any[]
 }) => {
     const [deletePw, setDeletePw] = useState("");
+// Add these state variables
+const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+const [editPw, setEditPw] = useState("");
+const [editPoiState, setEditPoiState] = useState<EditPOIState>({
+    poiName: "",
+    poiType: "drug",
+    adderName: "",
+    poiGang: "",
+});
+const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const mapRef = useRef<any>(null);
 
     const [{poiName, poiType, adderName, latLng, poiGang}, setNewPOI] = useState<NewPOIState>({
@@ -51,7 +68,6 @@ const Map = ({
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const [poiId, setPoiId] = useState<string | null>(null);
 
@@ -67,6 +83,79 @@ const Map = ({
     const showModal = () => setIsModalOpen(true);
     const showDeleteModal = () => {
         setIsDeleteModalOpen(true);
+    };
+
+// Modify the showEditModal function
+    const showEditModal = (poi: Poi) => {
+        setEditPoiState({
+            poiName: poi.poiName,
+            poiType: poi.poiType as poiTypeKey,
+            adderName: poi.adderName,
+            poiGang: poi.poiGang || "",
+        });
+
+        //@ts-ignore
+        setPoiId(poi.id);
+        setIsEditModalOpen(true);
+    };
+
+    const handleEdit = async () => {
+        const {data: pw} = await supabase.from('pw').select('pw');
+
+        //@ts-ignore
+        if (pw[0].pw !== editPw) {
+            setEditPw("");
+            return toast.error("Incorrect password");
+        }
+
+        if (!editPoiState.poiName || !editPoiState.adderName) {
+            return toast.error("Please fill in all required fields");
+        }
+
+        try {
+            await supabase
+                .from('pois')
+                .update({
+                    poiName: editPoiState.poiName,
+                    poiType: editPoiState.poiType,
+                    adderName: editPoiState.adderName,
+                    poiGang: editPoiState.poiGang || "null",
+                })
+                .eq('id', poiId);
+
+            setPoiList(poiList.map(poi =>
+                poi.id === poiId
+                    ? {
+                        ...poi,
+                        poiName: editPoiState.poiName,
+                        poiType: editPoiState.poiType,
+                        adderName: editPoiState.adderName,
+                        poiGang: editPoiState.poiGang || "null",
+                    }
+                    : poi
+            ));
+
+            toast.success("POI updated successfully!");
+            setIsEditModalOpen(false);
+            setPoiId(null);
+            setEditPw("");
+        } catch {
+            toast.error("Error updating POI");
+        }
+    };
+
+    const handleEditCancel = () => {
+        setIsEditModalOpen(false);
+        setEditPw("");
+    };
+
+    const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement> | poiTypeKey) => {
+        if (typeof e === 'string') {
+            setEditPoiState(prev => ({...prev, poiType: e}));
+        } else {
+            const {name, value} = e.target;
+            setEditPoiState(prev => ({...prev, [name]: value}));
+        }
     };
 
     const handleOk = async () => {
@@ -195,19 +284,32 @@ const Map = ({
                                             className='font-bold'>Gang:</span> {gangs.find(gangDetails => +gangDetails.id === +poi.poiGang)?.name || "N/A"}
                                         </p>
                                     )}
-                                    {(poi.poiType !== "dropPoints" || isDevMode) && (<Button
-                                            className="text-sm w-full"
-                                            type="primary"
-                                            danger
-                                            onClick={() => {
-                                                //@ts-ignore
-                                                setPoiId(poi.id);
-                                                showDeleteModal()
-                                            }}
-                                            icon={<span>🗑️</span>}
-                                        >
-                                            remove poi
-                                        </Button>
+                                    {((poi.poiType !== "dropPoints" && poi.poiType !== "gangHQ") || isDevMode) && (
+                                        <div className="flex gap-2">
+                                            <Button
+                                                className="text-sm w-full"
+                                                type="primary"
+                                                onClick={() => {
+                                                    showEditModal(poi);
+                                                }}
+                                                icon={<span>✏️</span>}
+                                            >
+                                                Edit poi
+                                            </Button>
+                                            <Button
+                                                className="text-sm w-full"
+                                                type="primary"
+                                                danger
+                                                onClick={() => {
+                                                    //@ts-ignore
+                                                    setPoiId(poi.id);
+                                                    showDeleteModal();
+                                                }}
+                                                icon={<span>🗑️</span>}
+                                            >
+                                                Remove poi
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </Popup>
@@ -333,6 +435,88 @@ const Map = ({
                                 <Input type="password" onChange={(e) => setDeletePw(e.target.value)}
                                        placeholder="Enter password"/>
                             </p>
+                        </div>
+                    )}
+                </Modal>
+                {/* Edit Modal */}
+                <Modal
+                    title="Edit Point of Interest"
+                    open={isEditModalOpen}
+                    onOk={handleEdit}
+                    onCancel={handleEditCancel}
+                    okText="Update"
+                    cancelText="Cancel"
+                >
+                    {poiId !== null && (
+                        <div className="flex flex-col gap-2">
+                            <div className="space-y-4">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-medium text-gray-700">Added By</label>
+                                    <Input
+                                        name="adderName"
+                                        value={editPoiState.adderName}
+                                        onChange={handleEditInputChange}
+                                        placeholder="e.g. Cole Lawless"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-medium text-gray-700">POI Name</label>
+                                    <Input
+                                        name="poiName"
+                                        value={editPoiState.poiName}
+                                        onChange={handleEditInputChange}
+                                        placeholder="e.g. Matthews"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-medium text-gray-700">POI's Gang</label>
+                                    <Select
+                                        value={gangs.find(gang=> +gang.id === +editPoiState.poiGang).name || "null"}
+                                        onChange={(value) => {
+                                            setEditPoiState(prev => ({...prev, poiGang: value}));
+                                        }}
+                                        style={{width: 200}}
+                                    >
+                                        <Select.Option value="null">None</Select.Option>
+                                        {gangs.map((gang) => (
+                                            <Select.Option
+                                                key={gang.id}
+                                                value={gang.id}
+                                                style={{color: gang.color}}
+                                            >
+                                                {gang.name}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-medium text-gray-700">POI Type</label>
+                                    <Select
+                                        value={editPoiState.poiType}
+                                        onChange={(value: poiTypeKey) => handleEditInputChange(value)}
+                                        options={(Object.keys(poiTypes) as poiTypeKey[])
+                                            .filter(key => isDevMode || (key !== "dropPoints" && key !== "gangHQ"))
+                                            .map(key => ({
+                                                value: key,
+                                                label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
+                                            }))
+                                        }
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-medium text-gray-700">Password</label>
+                                    <Input
+                                        type="password"
+                                        value={editPw}
+                                        onChange={(e) => setEditPw(e.target.value)}
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </Modal>
