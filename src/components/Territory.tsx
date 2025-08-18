@@ -105,7 +105,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                     color: territory.color,
                     boxes: territory.boxes,
                 };
-                console.log(dataToUpdate);
 
                 await supabase
                     .from('gangs')
