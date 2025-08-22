@@ -46,17 +46,22 @@ const Map = ({
     filteredGangs: string
     gangs: any[]
 }) => {
+
+    const [isAdding, setIsAdding] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const [deletePw, setDeletePw] = useState("");
 // Add these state variables
-const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-const [editPw, setEditPw] = useState("");
-const [editPoiState, setEditPoiState] = useState<EditPOIState>({
-    poiName: "",
-    poiType: "drug",
-    adderName: "",
-    poiGang: "",
-});
-const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editPw, setEditPw] = useState("");
+    const [editPoiState, setEditPoiState] = useState<EditPOIState>({
+        poiName: "",
+        poiType: "drug",
+        adderName: "",
+        poiGang: "",
+    });
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const mapRef = useRef<any>(null);
 
     const [{poiName, poiType, adderName, latLng, poiGang}, setNewPOI] = useState<NewPOIState>({
@@ -79,6 +84,81 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
         [imageHeight, imageWidth]
     ];
 
+// Update the sendWebhookNotification function for better formatting
+    const sendWebhookNotification = async (username: string, action: 'add' | 'edit' | 'delete', details: any) => {
+        const webhookUrl = "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
+
+        // Define colors for different actions
+        const colors = {
+            add: 0x00ff00,    // Green
+            edit: 0xffa500,   // Orange
+            delete: 0xff0000  // Red
+        };
+
+        try {
+            const embed = {
+                title: `POI ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+                color: colors[action],
+                fields: [],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: `Action by ${username}`
+                }
+            };
+
+            // Add fields based on the action type
+
+            if (action === 'add') {
+                embed.fields = [
+                    {name: 'POI Name', value: details.poiName, inline: true},
+                    {name: 'POI Type', value: poiTypes[details.poiType].name, inline: true},
+                    {
+                        name: 'Gang',
+                        value: details.poiGang === 'null' ? 'None' : (gangs.find(g => g.id === details.poiGang)?.name || 'None'),
+                        inline: true
+                    },
+                    {name: 'Added By', value: details.adderName}
+                ];
+            } else if (action === 'edit') {
+                embed.fields = details.changes.map((change: any) => ({
+                    name: change.field,
+                    value: `**From:** ${change.from}\n**To:** ${change.to}`,
+                    inline: true
+                }));
+
+                // Add POI ID field
+                embed.fields.unshift({
+                    name: 'POI ID',
+                    value: details.poiId.toString(),
+                    inline: false
+                });
+            } else if (action === 'delete') {
+                embed.fields = [
+                    {name: 'POI ID', value: details.poiId.toString(), inline: true},
+                    {name: 'POI Name', value: details.poiName, inline: true},
+                    {name: 'POI Type', value: poiTypes[details.poiType].name, inline: true},
+                    {
+                        name: 'Gang',
+                        value: details.poiGang === 'null' ? 'None' : (gangs.find(g => g.id === details.poiGang)?.name || 'None'),
+                        inline: true
+                    }
+                ];
+            }
+
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    embeds: [embed]
+                })
+            });
+        } catch (error) {
+            console.error('Failed to send webhook notification:', error);
+        }
+    };
+
 
     const showModal = () => setIsModalOpen(true);
     const showDeleteModal = () => {
@@ -99,9 +179,62 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
         setIsEditModalOpen(true);
     };
 
+
+// Update handleOk function
+    const handleOk = async () => {
+        if (!poiName || !adderName) return toast.error("Please fill in all fields");
+
+        const todayDate = formatDateDDMMMYYYY(new Date());
+        const poiDetails: Poi = {
+            poiType,
+            poiName,
+            adderName,
+            latLng,
+            todayDate,
+            poiGang: poiGang || "null",
+        };
+
+        try {
+            setIsAdding(true);
+
+            // Send webhook with new format
+            await sendWebhookNotification(
+                adderName,
+                'add',
+                {
+                    poiName,
+                    poiType,
+                    poiGang,
+                    adderName
+                }
+            );
+
+            const {data, error} = await supabase
+                .from('pois')
+                .insert([poiDetails])
+                .select();
+
+            if (error) throw error;
+
+            const newPoi = data[0];
+            setPoiList(prev => [...prev, newPoi]);
+
+
+            setIsModalOpen(false);
+            setIsClick(false);
+            toast.success("POI saved!");
+        } catch {
+            toast.error("Error saving POI");
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+// Update handleEdit function
     const handleEdit = async () => {
         const {data: pw} = await supabase.from('pw').select('pw');
 
+        setIsEditing(true);
         //@ts-ignore
         if (pw[0].pw !== editPw) {
             setEditPw("");
@@ -113,6 +246,52 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
         }
 
         try {
+            const originalPoi = poiList.find(poi => poi.id === poiId);
+            const changes = [];
+
+            if (originalPoi) {
+                if (originalPoi.poiName !== editPoiState.poiName) {
+                    changes.push({
+                        field: 'Name',
+                        from: originalPoi.poiName,
+                        to: editPoiState.poiName
+                    });
+                }
+                if (originalPoi.poiType !== editPoiState.poiType) {
+                    changes.push({
+                        field: 'Type',
+                        from: poiTypes[originalPoi.poiType].name,
+                        to: poiTypes[editPoiState.poiType].name
+                    });
+                }
+                if (originalPoi.adderName !== editPoiState.adderName) {
+                    changes.push({
+                        field: 'Added By',
+                        from: originalPoi.adderName,
+                        to: editPoiState.adderName
+                    });
+                }
+                if (originalPoi.poiGang !== editPoiState.poiGang) {
+                    const oldGang = gangs.find(g => g.id === originalPoi.poiGang)?.name || "None";
+                    const newGang = gangs.find(g => g.id === editPoiState.poiGang)?.name || "None";
+                    changes.push({
+                        field: 'Gang',
+                        from: oldGang,
+                        to: newGang
+                    });
+                }
+            }
+
+            // Send webhook with new format
+            await sendWebhookNotification(
+                editPoiState.adderName,
+                'edit',
+                {
+                    poiId,
+                    changes
+                }
+            );
+
             await supabase
                 .from('pois')
                 .update({
@@ -135,12 +314,63 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
                     : poi
             ));
 
+
             toast.success("POI updated successfully!");
             setIsEditModalOpen(false);
             setPoiId(null);
             setEditPw("");
         } catch {
             toast.error("Error updating POI");
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+// Update handleDelete function
+    const handleDelete = async () => {
+        const {data: pw} = await supabase.from('pw').select('pw');
+
+        setIsDeleting(true);
+
+        //@ts-ignore
+        if (pw[0].pw !== deletePw) {
+            setDeletePw("");
+            return toast.error("Incorrect password");
+        }
+
+        try {
+            const poiToDelete = poiList.find(poi => poi.id === poiId);
+
+            if (!poiToDelete) {
+                throw new Error('POI not found');
+            }
+
+            // Send webhook with new format
+            await sendWebhookNotification(
+                poiToDelete.adderName,
+                'delete',
+                {
+                    poiId,
+                    poiName: poiToDelete.poiName,
+                    poiType: poiToDelete.poiType,
+                    poiGang: poiToDelete.poiGang
+                }
+            );
+
+            await supabase
+                .from('pois')
+                .delete()
+                .eq('id', poiId);
+
+
+            setPoiList(poiList.filter((poi) => poi.id !== poiId));
+            toast.success("POI removed!");
+            setIsDeleteModalOpen(false);
+            setPoiId(null);
+        } catch {
+            toast.error("Error deleting POI");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -156,60 +386,6 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const {name, value} = e.target;
             setEditPoiState(prev => ({...prev, [name]: value}));
         }
-    };
-
-    const handleOk = async () => {
-        if (!poiName || !adderName) return toast.error("Please fill in all fields");
-
-        const todayDate = formatDateDDMMMYYYY(new Date());
-        const poiDetails: Poi = {
-            poiType,
-            poiName,
-            adderName,
-            latLng,
-            todayDate,
-            poiGang: poiGang || "null",
-        };
-
-        try {
-            await supabase
-                .from('pois')
-                .insert([
-                    poiDetails,
-                ])
-                .select()
-
-            setPoiList(prev => [...prev, poiDetails]);
-
-            setIsModalOpen(false);
-            setIsClick(false);
-            toast.success("POI saved!");
-
-        } catch {
-            toast.error("Error saving POI");
-        }
-    };
-
-    const handleDelete = async () => {
-        const {data: pw} = await supabase.from('pw').select('pw');
-
-        //@ts-ignore
-        if (pw[0].pw !== deletePw) {
-            setDeletePw("");
-            return toast.error("Incorrect password");
-        }
-
-        await supabase
-            .from('pois')
-            .delete()
-            .eq('id', poiId)
-
-        if (poiId !== null) {
-            setPoiList(poiList.filter((poi) => poi.id !== poiId));
-            toast.success("POI removed!");
-        }
-        setIsDeleteModalOpen(false);
-        setPoiId(null);
     };
 
     const handleCancelDelete = () => {
@@ -364,6 +540,7 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
                     title="Point of interest details"
                     open={isModalOpen}
                     onOk={handleOk}
+                    okButtonProps={{loading: isAdding}}
                     onCancel={handleCancel}
                     closable
                 >
@@ -422,8 +599,8 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
                     onOk={handleDelete}
                     onCancel={handleCancelDelete}
                     okText="Delete"
-                    okButtonProps={{danger: true}}
                     cancelText="Cancel"
+                    okButtonProps={{danger: true, loading: isDeleting}}
                 >
                     <p>Are you sure you want to delete this point of interest?</p>
                     {poiId !== null && (
@@ -446,6 +623,7 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
                     onCancel={handleEditCancel}
                     okText="Update"
                     cancelText="Cancel"
+                    okButtonProps={{loading: isEditing}}
                 >
                     {poiId !== null && (
                         <div className="flex flex-col gap-2">
@@ -473,7 +651,7 @@ const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
                                 <div className="flex flex-col gap-1">
                                     <label className="text-sm font-medium text-gray-700">POI's Gang</label>
                                     <Select
-                                        value={gangs.find(gang=> +gang.id === +editPoiState.poiGang).name || "null"}
+                                        value={gangs.find(gang => +gang.id === +editPoiState.poiGang)?.name ?? "null"}
                                         onChange={(value) => {
                                             setEditPoiState(prev => ({...prev, poiGang: value}));
                                         }}
