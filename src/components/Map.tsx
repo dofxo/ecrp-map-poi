@@ -109,6 +109,7 @@ const Map = ({
                     { name: "POI Name", value: String(details.poiName), inline: true },
                     {
                         name: "POI Type",
+                        //@ts-ignore
                         value: String(poiTypes[details.poiType]?.name ?? "Unknown"),
                         inline: true,
                     },
