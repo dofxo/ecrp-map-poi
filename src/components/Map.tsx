@@ -53,7 +53,6 @@ const Map = ({
 
     const [deletePw, setDeletePw] = useState("");
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editPw, setEditPw] = useState("");
     const [editPoiState, setEditPoiState] = useState<EditPOIState>({
         poiName: "",
         poiType: "drug",
@@ -195,14 +194,8 @@ const Map = ({
     };
 
     const handleEdit = async () => {
-        const {data: pw} = await supabase.from('pw').select('pw');
         setIsEditing(true);
 
-        //@ts-ignore
-        if (pw[0].pw !== editPw) {
-            setEditPw("");
-            return toast.error("Incorrect password");
-        }
 
         if (!editPoiState.poiName || !editPoiState.adderName) {
             return toast.error("Please fill in all required fields");
@@ -249,7 +242,6 @@ const Map = ({
             toast.success("POI updated successfully!");
             setIsEditModalOpen(false);
             setPoiId(null);
-            setEditPw("");
         } catch {
             toast.error("Error updating POI");
         } finally {
@@ -292,7 +284,6 @@ const Map = ({
 
     const handleEditCancel = () => {
         setIsEditModalOpen(false);
-        setEditPw("");
     };
     const handleCancelDelete = () => {
         setIsDeleteModalOpen(false);
@@ -556,11 +547,6 @@ const Map = ({
                                                 label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
                                             }))}
                                     />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-sm font-medium text-gray-700">Password</label>
-                                    <Input type="password" value={editPw} onChange={(e) => setEditPw(e.target.value)}
-                                           placeholder="Enter password"/>
                                 </div>
                             </div>
                         </div>
