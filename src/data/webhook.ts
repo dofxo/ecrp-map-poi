@@ -1,0 +1,1 @@
+export const webhook = 'https://discord.com/api/webhooks/1408481095330037821/G9F8oRgi32FYfgXKcSedRPCqsrPXAUPmGuZlh4jObn4tI99sbWYMYUDdq_6uhalpLX38'
