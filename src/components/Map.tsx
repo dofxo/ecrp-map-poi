@@ -85,77 +85,98 @@ const Map = ({
     ];
 
 // Update the sendWebhookNotification function for better formatting
-    const sendWebhookNotification = async (username: string, action: 'add' | 'edit' | 'delete', details: any) => {
-        const webhookUrl = "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
+    const sendWebhookNotification = async (
+        username: string,
+        action: "add" | "edit" | "delete",
+        details: any
+    ) => {
+        const webhookUrl =
+            "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
 
         // Define colors for different actions
-        const colors = {
-            add: 0x00ff00,    // Green
-            edit: 0xffa500,   // Orange
-            delete: 0xff0000  // Red
+        const colors: Record<typeof action, number> = {
+            add: 0x00ff00, // Green
+            edit: 0xffa500, // Orange
+            delete: 0xff0000, // Red
         };
 
         try {
-            const embed = {
-                title: `POI ${action.charAt(0).toUpperCase() + action.slice(1)}`,
-                color: colors[action],
-                fields: [],
-                timestamp: new Date().toISOString(),
-                footer: {
-                    text: `Action by ${username}`
-                }
-            };
+            // Properly typed fields
+            let fields: Array<{ name: string; value: string; inline?: boolean }> = [];
 
-            // Add fields based on the action type
-
-            if (action === 'add') {
-                embed.fields = [
-                    {name: 'POI Name', value: details.poiName, inline: true},
-                    {name: 'POI Type', value: poiTypes[details.poiType].name, inline: true},
+            if (action === "add") {
+                fields = [
+                    { name: "POI Name", value: String(details.poiName), inline: true },
                     {
-                        name: 'Gang',
-                        value: details.poiGang === 'null' ? 'None' : (gangs.find(g => g.id === details.poiGang)?.name || 'None'),
-                        inline: true
+                        name: "POI Type",
+                        value: String(poiTypes[details.poiType]?.name ?? "Unknown"),
+                        inline: true,
                     },
-                    {name: 'Added By', value: details.adderName}
+                    {
+                        name: "Gang",
+                        value:
+                            details.poiGang === "null"
+                                ? "None"
+                                : String(gangs.find((g) => g.id === details.poiGang)?.name || "None"),
+                        inline: true,
+                    },
+                    { name: "Added By", value: String(details.adderName) },
                 ];
-            } else if (action === 'edit') {
-                embed.fields = details.changes.map((change: any) => ({
-                    name: change.field,
-                    value: `**From:** ${change.from}\n**To:** ${change.to}`,
-                    inline: true
+            } else if (action === "edit") {
+                fields = details.changes.map((change: any) => ({
+                    name: String(change.field),
+                    value: `**From:** ${String(change.from)}\n**To:** ${String(change.to)}`,
+                    inline: true,
                 }));
 
-                // Add POI ID field
-                embed.fields.unshift({
-                    name: 'POI ID',
-                    value: details.poiId.toString(),
-                    inline: false
+                // Add POI ID at the start
+                fields.unshift({
+                    name: "POI ID",
+                    value: String(details.poiId),
+                    inline: false,
                 });
-            } else if (action === 'delete') {
-                embed.fields = [
-                    {name: 'POI ID', value: details.poiId.toString(), inline: true},
-                    {name: 'POI Name', value: details.poiName, inline: true},
-                    {name: 'POI Type', value: poiTypes[details.poiType].name, inline: true},
+            } else if (action === "delete") {
+                fields = [
+                    { name: "POI ID", value: String(details.poiId), inline: true },
+                    { name: "POI Name", value: String(details.poiName), inline: true },
                     {
-                        name: 'Gang',
-                        value: details.poiGang === 'null' ? 'None' : (gangs.find(g => g.id === details.poiGang)?.name || 'None'),
-                        inline: true
-                    }
+                        name: "POI Type",
+                        //@ts-ignore
+                        value: String(poiTypes[details.poiType]?.name ?? "Unknown"),
+                        inline: true,
+                    },
+                    {
+                        name: "Gang",
+                        value:
+                            details.poiGang === "null"
+                                ? "None"
+                                : String(gangs.find((g) => g.id === details.poiGang)?.name || "None"),
+                        inline: true,
+                    },
                 ];
             }
 
+            const embed = {
+                title: `POI ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+                color: colors[action],
+                fields,
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: `Action by ${username}`,
+                },
+            };
+
             await fetch(webhookUrl, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    embeds: [embed]
-                })
+                    embeds: [embed],
+                }),
             });
         } catch (error) {
-            console.error('Failed to send webhook notification:', error);
+            console.error("Failed to send webhook notification:", error);
         }
     };
 
