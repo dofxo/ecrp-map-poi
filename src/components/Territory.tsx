@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import {Button, Input, Modal} from "antd";
 // @ts-ignore
 import Cookies from 'js-cookie';
+import {webhook} from "../data/webhook.ts";
 
 export interface PixelTerritory {
     id: string;
@@ -76,7 +77,7 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         action: 'add' | 'edit' | 'delete',
         details: any
     ) => {
-        const webhookUrl = "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
+        const webhookUrl =  webhook
 
         const colors = {
             add: 0x00ff00,    // Green

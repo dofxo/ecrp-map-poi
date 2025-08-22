@@ -8,6 +8,7 @@ import {formatDateDDMMMYYYY} from "../helper/formatDate.ts";
 import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
 import Territories from "./Territory.tsx";
 import {supabase} from "../config/supabase.ts";
+import {webhook} from "../data/webhook.ts";
 
 interface NewPOIState {
     poiName: string;
@@ -86,8 +87,7 @@ const Map = ({
         action: "add" | "edit" | "delete",
         details: any
     ) => {
-        const webhookUrl =
-            "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
+        const webhookUrl = webhook
 
         const colors: Record<typeof action, number> = {
             add: 0x00ff00,
