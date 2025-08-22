@@ -70,6 +70,65 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         })()
     }, []);
 
+    // Add this new function at the top of Territories.tsx (below imports)
+    const sendTerritoryWebhookNotification = async (
+        username: string,
+        action: 'add' | 'edit' | 'delete',
+        details: any
+    ) => {
+        const webhookUrl = "https://discord.com/api/webhooks/1408448012132548730/m8zoSy8dpprtanuwm01WtI7Wh7VV-bKdFij6xYZkMrOZlmHdEniaiy5urlz0HF2j7W1B";
+
+        const colors = {
+            add: 0x00ff00,    // Green
+            edit: 0xffa500,   // Orange
+            delete: 0xff0000  // Red
+        };
+
+        try {
+            const embed: any = {
+                title: `Territory ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+                color: colors[action],
+                fields: [],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: `Action by ${username}`
+                }
+            };
+
+            if (action === 'add') {
+                embed.fields = [
+                    { name: 'Territory Name', value: details.name, inline: true },
+                    { name: 'Color', value: details.color, inline: true },
+                    { name: 'Added By', value: details.updatedBy || 'Unknown', inline: true }
+                ];
+            } else if (action === 'edit') {
+                embed.fields = [
+                    { name: 'Territory ID', value: details.id.toString(), inline: false },
+                    { name: 'New Name', value: details.name, inline: true },
+                    { name: 'New Color', value: details.color, inline: true },
+                    { name: 'Updated By', value: details.updatedBy || 'Unknown', inline: true }
+                ];
+            } else if (action === 'delete') {
+                embed.fields = [
+                    { name: 'Territory ID', value: details.id.toString(), inline: true },
+                    { name: 'Name', value: details.name, inline: true },
+                    { name: 'Color', value: details.color, inline: true },
+                    { name: 'Deleted By', value: username, inline: true }
+                ];
+            }
+
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch (error) {
+            console.error('Failed to send territory webhook notification:', error);
+        }
+    };
+
     const generateStaticData = async () => {
         if (!selectedTerritoryId) {
             toast.error('No territory selected!');
@@ -334,6 +393,11 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
         }
 
         try {
+
+            await sendTerritoryWebhookNotification(editingTerritory.updatedBy, "edit", {
+                id: selectedTerritoryId,
+                ...editingTerritory
+            });
             const {error} = await supabase
                 .from('gangs')
                 .update({
@@ -361,7 +425,6 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
             toast.error("Failed to update territory!");
         }
     };
-
 
     return (
         <>
