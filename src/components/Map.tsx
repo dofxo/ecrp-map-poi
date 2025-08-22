@@ -105,7 +105,7 @@ const Map = ({
 
             if (action === "add") {
                 fields = [
-                    {name: "POI Name", value: String(details.poiName), inline: true},
+                    {name: "POI/Dealer Name", value: String(details.poiName), inline: true},
                     //@ts-ignore
                     {name: "POI Type", value: String(poiTypes[details.poiType]?.name ?? "Unknown"), inline: true},
                     {name: "Gang", value: getGangName(details.poiGang), inline: true},
@@ -121,7 +121,7 @@ const Map = ({
             } else if (action === "delete") {
                 fields = [
                     {name: "POI ID", value: String(details.poiId), inline: true},
-                    {name: "POI Name", value: String(details.poiName), inline: true},
+                    {name: "POI/Dealer Name", value: String(details.poiName), inline: true},
                     //@ts-ignore
                     {name: "POI Type", value: String(poiTypes[details.poiType]?.name ?? "Unknown"), inline: true},
                     {name: "Gang", value: getGangName(details.poiGang), inline: true},
@@ -341,7 +341,7 @@ const Map = ({
                                 icon={emojiIcon}>
                             <Popup>
                                 <div className="p-2 flex flex-col gap-2">
-                                    <p className='!m-0'><span className='font-bold'>POI name:</span> {poi.poiName}</p>
+                                    <p className='!m-0'><span className='font-bold'>POI/Dealer name:</span> {poi.poiName}</p>
                                     <p className='!m-0'><span className='font-bold'>POI type: </span>
                                         {poiTypes[dealerType]?.icon} {poiTypes[dealerType]?.name}
                                     </p>
@@ -430,7 +430,7 @@ const Map = ({
                                 <Input name="adderName" onChange={handleInputChange} placeholder="e.g. Cole Lawless"/>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-700">POI Name</label>
+                                <label className="text-sm font-medium text-gray-700">POI/Dealer Name</label>
                                 <Input name="poiName" onChange={handleInputChange} placeholder="e.g. Matthews"/>
                             </div>
                             <div className="flex flex-col gap-1">
@@ -512,7 +512,7 @@ const Map = ({
                                            onChange={handleEditInputChange}/>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-sm font-medium text-gray-700">POI Name</label>
+                                    <label className="text-sm font-medium text-gray-700">POI/Dealer Name</label>
                                     <Input name="poiName" value={editPoiState.poiName}
                                            onChange={handleEditInputChange}/>
                                 </div>
