@@ -352,7 +352,7 @@ const Map = ({
                                             className='font-bold'>Gang:</span> {gangs.find(gangDetails => +gangDetails.id === +poi.poiGang)?.name || "N/A"}
                                         </p>
                                     )}
-                                    {((poi.poiType !== "dropPoints" && poi.poiType !== "gangHQ") || isDevMode) && (
+                                    {(poi.poiType !== "dropPoints" || isDevMode) && (
                                         <div className="flex gap-2">
                                             <Button className="text-sm w-full" type="primary"
                                                     onClick={() => showEditModal(poi)} icon={<span>✏️</span>}>
@@ -458,7 +458,7 @@ const Map = ({
                                     onChange={(value: poiTypeKey) => handleInputChange(value)}
                                     value={poiType}
                                     options={(Object.keys(poiTypes) as poiTypeKey[])
-                                        .filter(key => isDevMode || (key !== "dropPoints" && key !== "gangHQ"))
+                                        .filter(key => isDevMode || key !== "dropPoints")
                                         .map(key => ({
                                             value: key,
                                             label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
@@ -541,7 +541,7 @@ const Map = ({
                                         value={editPoiState.poiType}
                                         onChange={(value: poiTypeKey) => handleEditInputChange(value)}
                                         options={(Object.keys(poiTypes) as poiTypeKey[])
-                                            .filter(key => isDevMode || (key !== "dropPoints" && key !== "gangHQ"))
+                                            .filter(key => isDevMode || key !== "dropPoints")
                                             .map(key => ({
                                                 value: key,
                                                 label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
