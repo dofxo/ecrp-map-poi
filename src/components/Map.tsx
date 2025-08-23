@@ -329,11 +329,11 @@ const Map = ({
                     const dealerType = poi.poiType as poiTypeKey;
                     //@ts-ignore
                     const emojiIcon = L.divIcon({
-                        html: `<div style="font-size: 24px">${poiTypes[dealerType]?.icon}</div>`,
+                        html: `<img src="${poiTypes[dealerType]?.icon}"/>`,
                         className: 'emoji-marker',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12],
-                        popupAnchor: [0, -12]
+                        iconSize: [29, 29],
+                        iconAnchor: [17, 17],
+                        popupAnchor: [0, -17]
                     });
 
                     return (
@@ -341,10 +341,17 @@ const Map = ({
                                 icon={emojiIcon}>
                             <Popup>
                                 <div className="p-2 flex flex-col gap-2">
-                                    <p className='!m-0'><span className='font-bold'>POI/Dealer name:</span> {poi.poiName}</p>
-                                    <p className='!m-0'><span className='font-bold'>POI type: </span>
-                                        {poiTypes[dealerType]?.icon} {poiTypes[dealerType]?.name}
-                                    </p>
+                                    <p className='!m-0'><span
+                                        className='font-bold'>POI/Dealer name:</span> {poi.poiName}</p>
+                                    <div className='flex items-center gap-2'>
+                                        <p className='!m-0'><span className='font-bold'>POI type: </span>
+                                        </p>
+                                        <div className='flex items-center gap-1'>
+                                            <img src={poiTypes[dealerType]?.icon}
+                                                 className='emoji-marker'/> {poiTypes[dealerType]?.name}
+                                        </div>
+
+                                    </div>
                                     <p className='!m-0'><span className='font-bold'>Added by:</span> {poi.adderName}</p>
                                     <p className='!m-0'><span className='font-bold'>Added on:</span> {poi.todayDate}</p>
                                     {Boolean(poi.poiGang) && (
@@ -437,15 +444,15 @@ const Map = ({
                                 <label className="text-sm font-medium text-gray-700">POI's Gang</label>
                                 <Select
                                     value={editPoiState.poiGang ?? "null"}
-                                    onChange={(value) => setEditPoiState(prev => ({ ...prev, poiGang: value }))}
-                                    style={{ width: 200 }}
+                                    onChange={(value) => setEditPoiState(prev => ({...prev, poiGang: value}))}
+                                    style={{width: 200}}
                                 >
                                     <Select.Option value="null">None</Select.Option>
                                     {gangs.map((gang) => (
                                         <Select.Option
                                             key={gang.id}
                                             value={String(gang.id)}
-                                            style={{ color: gang.color }}
+                                            style={{color: gang.color}}
                                         >
                                             {gang.name}
                                         </Select.Option>
@@ -461,7 +468,10 @@ const Map = ({
                                         .filter(key => isDevMode || key !== "dropPoints")
                                         .map(key => ({
                                             value: key,
-                                            label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
+                                            label: <span className='flex items-center gap-2'>
+                                                    <img src={poiTypes[key]?.icon} className='emoji-marker !max-w-[20px]'/>
+                                                    <span>{poiTypes[key].name}</span>
+                                                </span>
                                         }))}
                                 />
                             </div>
@@ -520,15 +530,15 @@ const Map = ({
                                     <label className="text-sm font-medium text-gray-700">POI's Gang</label>
                                     <Select
                                         value={editPoiState.poiGang ?? "null"}
-                                        onChange={(value) => setEditPoiState(prev => ({ ...prev, poiGang: value }))}
-                                        style={{ width: 200 }}
+                                        onChange={(value) => setEditPoiState(prev => ({...prev, poiGang: value}))}
+                                        style={{width: 200}}
                                     >
                                         <Select.Option value="null">None</Select.Option>
                                         {gangs.map((gang) => (
                                             <Select.Option
                                                 key={gang.id}
                                                 value={String(gang.id)}
-                                                style={{ color: gang.color }}
+                                                style={{color: gang.color}}
                                             >
                                                 {gang.name}
                                             </Select.Option>
@@ -544,7 +554,11 @@ const Map = ({
                                             .filter(key => isDevMode || key !== "dropPoints")
                                             .map(key => ({
                                                 value: key,
-                                                label: <span>{poiTypes[key].icon} {poiTypes[key].name}</span>
+                                                label: <span className='flex items-center gap-2'>
+                                                    <img src={poiTypes[key]?.icon} className='emoji-marker !max-w-[20px]'/>
+                                                    <span>{poiTypes[key].name}</span>
+                                                </span>
+
                                             }))}
                                     />
                                 </div>
