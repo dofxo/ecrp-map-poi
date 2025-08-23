@@ -22,6 +22,10 @@ body {
     align-items: center;
     justify-content: center;
     transition: transform 0.2s;
+    max-width: 30px;
+    img {
+        width: inherit !important;
+    }
 
 }
 .emoji-marker:hover {
