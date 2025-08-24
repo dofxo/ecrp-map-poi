@@ -9,6 +9,7 @@ import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
 import Territories from "./Territory.tsx";
 import {supabase} from "../config/supabase.ts";
 import {webhook} from "../data/webhook.ts";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 
 interface NewPOIState {
     poiName: string;
@@ -362,7 +363,7 @@ const Map = ({
                                     {(poi.poiType !== "dropPoints" || isDevMode) && (
                                         <div className="flex gap-2">
                                             <Button className="text-sm w-full" type="primary"
-                                                    onClick={() => showEditModal(poi)} icon={<span>✏️</span>}>
+                                                    onClick={() => showEditModal(poi)} icon={<EditOutlined />}>
                                                 Edit poi
                                             </Button>
                                             <Button className="text-sm w-full" type="primary" danger
@@ -371,7 +372,7 @@ const Map = ({
                                                         setPoiId(poi.id);
                                                         showDeleteModal();
                                                     }}
-                                                    icon={<span>🗑️</span>}>
+                                                    icon={<DeleteOutlined />}>
                                                 Remove poi
                                             </Button>
                                         </div>
