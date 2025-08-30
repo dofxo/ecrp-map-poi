@@ -173,7 +173,7 @@ const Map = ({
             adderName,
             latLng,
             todayDate,
-            poiGang: poiGang || "null",
+            poiGang: editPoiState.poiGang || "null",
         };
 
         try {
