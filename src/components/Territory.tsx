@@ -468,7 +468,7 @@ const Territories = ({isDevMode, filteredGangs}: { isDevMode: boolean, filteredG
                         >
                             <div className="flex flex-col gap-2 p-2">
                                 <h3
-                                    className="text-center text-2xl font-bold"
+                                    className="text-center text-2xl font-bold [text-shadow:1px_1px_0_black,-1px_-1px_0_black,1px_-1px_0_black,-1px_1px_0_black]"
                                     style={{color: territory.color}}
                                 >
                                     {territory.name}
