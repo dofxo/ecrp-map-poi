@@ -17,7 +17,7 @@ const Filter = ({gangs,setFilteredGangs}: {
             >
                 <Select.Option value="all">All Gangs</Select.Option>
                 {gangs.map((gang) => (
-                    <Select.Option value={gang.id} style={{color: gang.color}}>{gang.name}</Select.Option>
+                    <Select.Option value={gang.id} className="[text-shadow:.5px_.5px_0_black,-.5px_-.5px_0_black,.5px_-.5px_0_black,-.5px_.5px_0_black]" style={{color: gang.color}}>{gang.name}</Select.Option>
                 ))}
             </Select>
         </div>
