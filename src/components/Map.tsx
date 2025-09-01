@@ -488,29 +488,26 @@ const Map = ({
                             <Polyline
                                 key={`${track.id}-${idx}`}
                                 positions={segment}
-                                pathOptions={{ color: track.color, weight: 3 }}
+                                pathOptions={{color: track.color, weight: 3}}
                             >
-                                {/* Only attach Popup to the first segment (otherwise it duplicates) */}
-                                {idx === 0 && (
-                                    <Popup>
-                                        <div className="flex gap-2 flex-col p-2">
-                                            <span><span className="font-bold">Track Name: </span>{track.name}</span>
-                                            <span><span className="font-bold">Added by: </span>{track.addedBy}</span>
+                                <Popup>
+                                    <div className="flex gap-2 flex-col p-2">
+                                        <span><span className="font-bold">Track Name: </span>{track.name}</span>
+                                        <span><span className="font-bold">Added by: </span>{track.addedBy}</span>
 
-                                            <Button
-                                                type="primary"
-                                                danger
-                                                icon={<DeleteOutlined />}
-                                                onClick={() => {
-                                                    setTrackId(track.id);
-                                                    setIsDeleteTrackModalOpen(true);
-                                                }}
-                                            >
-                                                Remove track
-                                            </Button>
-                                        </div>
-                                    </Popup>
-                                )}
+                                        <Button
+                                            type="primary"
+                                            danger
+                                            icon={<DeleteOutlined/>}
+                                            onClick={() => {
+                                                setTrackId(track.id);
+                                                setIsDeleteTrackModalOpen(true);
+                                            }}
+                                        >
+                                            Remove track
+                                        </Button>
+                                    </div>
+                                </Popup>
                             </Polyline>
                         ))
                     ))}
