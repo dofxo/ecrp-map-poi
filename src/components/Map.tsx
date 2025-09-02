@@ -37,6 +37,8 @@ const Map = ({
                  showDropPoints,
                  filteredGangs,
                  gangs,
+                 isNaming,
+                 setIsNaming,
              }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
@@ -47,6 +49,8 @@ const Map = ({
     showDropPoints: boolean
     filteredGangs: string
     gangs: any[]
+    setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
+    isNaming: boolean
 }) => {
 
     const mapRef = useRef<any>(null);
@@ -454,7 +458,8 @@ const Map = ({
             overflow: 'hidden'
         }}>
             <div style={{width: '100%', height: '85vh'}}>
-                {mapInstance && <RaceTrackControl map={mapInstance} setTracks={setTracks}/>}
+                {mapInstance && <RaceTrackControl isNaming={isNaming} setIsNaming={setIsNaming} map={mapInstance}
+                                                  setTracks={setTracks}/>}
 
                 <MapContainer
                     ref={mapRef}

@@ -21,6 +21,7 @@ const isDevMode = import.meta.env.MODE === "development";
 
 const App = () => {
     const [isClick, setIsClick] = useState(false);
+    const [isAddingTrack, setIsAddingTrack] = useState(false);
     //@ts-ignore
     const [poiList, setPoiList] = useState<Poi[]>([]);
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
@@ -133,6 +134,8 @@ const App = () => {
                         isClick={isClick}
                         gangs={gangs}
                         setFilteredGangs={setFilteredGangs}
+                        setIsNaming={setIsAddingTrack}
+
                     />
                     <Map
                         gangs={gangs}
@@ -148,6 +151,8 @@ const App = () => {
                         setPoiList={setPoiList}
                         setIsClick={setIsClick}
                         isClick={isClick}
+                        setIsNaming={setIsAddingTrack}
+                        isNaming={isAddingTrack}
                     />
                 </main>
             )}
