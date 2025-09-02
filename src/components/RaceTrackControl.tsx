@@ -1,23 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import toast from "react-hot-toast";
 import {CheckOutlined, EditOutlined, RedoOutlined} from "@ant-design/icons";
-import { supabase } from "../config/supabase.ts";
-import { Button, Modal, Form, Input, ColorPicker, Alert } from "antd";
+import {supabase} from "../config/supabase.ts";
+import {Alert, Button, ColorPicker, Form, Input, Modal} from "antd";
 
 interface RaceTrackControlProps {
     //@ts-ignore
     map: L.Map | null; // Leaflet map instance
-    setTracks: React.Dispatch<
-        React.SetStateAction<
-            {
-                id: string;
-                name: string;
-                boxes: [number, number][][];
-                addedBy: string;
-                color: string;
-            }[]
-        >
-    >;
+    setTracks:
+        React.Dispatch<React.SetStateAction<{
+            id: string
+            name: string
+            boxes: [number, number][]
+            addedBy: string
+            color: string
+        }[]>>
     setIsNaming: React.Dispatch<React.SetStateAction<boolean>>;
     isNaming: boolean;
 }
@@ -72,7 +69,7 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
 
                 setIsDrawing(true);
                 toast("Drawing started! Click again to stop.", {
-                    icon: <EditOutlined />,
+                    icon: <EditOutlined/>,
                 });
             } else {
                 if (currentPointsRef.current.length > 1) {
@@ -116,10 +113,11 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                 });
                 setModalOpen(false);
                 toast("Now click on the map to draw your track!", {
-                    icon: <EditOutlined />,
+                    icon: <EditOutlined/>,
                 });
             })
-            .catch(() => {});
+            .catch(() => {
+            });
     };
 
     const undoLastSegment = () => {
@@ -136,7 +134,7 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             map.removeLayer(lastPolyline);
         }
 
-        toast("Last segment removed", { icon: "↩️" });
+        toast("Last segment removed", {icon: "↩️"});
     };
 
     const submitTrack = async () => {
@@ -196,26 +194,26 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                     <Form.Item
                         name="name"
                         label="Track Name"
-                        rules={[{ required: true, message: "Please enter a track name" }]}
+                        rules={[{required: true, message: "Please enter a track name"}]}
                     >
-                        <Input placeholder="Enter track name" />
+                        <Input placeholder="Enter track name"/>
                     </Form.Item>
 
                     <Form.Item
                         name="addedBy"
                         label="Added By"
-                        rules={[{ required: true, message: "Please enter your name" }]}
+                        rules={[{required: true, message: "Please enter your name"}]}
                     >
-                        <Input placeholder="Your name" />
+                        <Input placeholder="Your name"/>
                     </Form.Item>
 
                     <Form.Item
                         name="color"
                         label="Track Color"
                         initialValue="#ff0000"
-                        rules={[{ required: true }]}
+                        rules={[{required: true}]}
                     >
-                        <ColorPicker defaultValue="#ff0000" />
+                        <ColorPicker defaultValue="#ff0000"/>
                     </Form.Item>
                 </Form>
             </Modal>
@@ -234,8 +232,8 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                     <Alert
                         message="Drawing Instructions"
                         description={
-                            <div style={{ marginTop: 8 }}>
-                                <p style={{ fontSize: 12, marginBottom: 8 }}>
+                            <div style={{marginTop: 8}}>
+                                <p style={{fontSize: 12, marginBottom: 8}}>
                                     Click on the map to start drawing.
                                     Click again to stop.
                                     Repeat to add more segments.
@@ -244,15 +242,15 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                                     type="default"
                                     onClick={undoLastSegment}
                                     block
-                                    icon={<RedoOutlined />}
-                                    style={{ marginBottom: 8 }}
+                                    icon={<RedoOutlined/>}
+                                    style={{marginBottom: 8}}
                                     danger
                                 >
                                     Undo Last Segment
                                 </Button>
                                 <Button
                                     type="primary"
-                                    icon={<CheckOutlined />}
+                                    icon={<CheckOutlined/>}
                                     onClick={submitTrack}
                                     block
                                     loading={submitting}
