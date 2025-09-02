@@ -91,12 +91,6 @@ const Map = ({
             const trackToDelete = tracks.find((t) => t.id === trackId);
             if (!trackToDelete) throw new Error("Track not found");
 
-            // optional webhook
-            await sendWebhookNotification(trackToDelete.addedBy, "delete", {
-                trackId,
-                trackName: trackToDelete.name,
-            });
-
             await supabase.from("raceTracks").delete().eq("id", trackId);
 
             setTracks(tracks.filter((t) => t.id !== trackId));
