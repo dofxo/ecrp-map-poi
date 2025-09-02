@@ -39,6 +39,7 @@ const Map = ({
                  gangs,
                  isNaming,
                  setIsNaming,
+                 showRaceTracks
              }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
@@ -51,6 +52,7 @@ const Map = ({
     gangs: any[]
     setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
     isNaming: boolean
+    showRaceTracks: boolean
 }) => {
 
     const mapRef = useRef<any>(null);
@@ -481,7 +483,7 @@ const Map = ({
                     <PoiMarkers/>
                     {showTerritory && <Territories filteredGangs={filteredGangs} isDevMode={isDevMode}/>}
 
-                    {tracks.map((track) => (
+                    {showRaceTracks && tracks.map((track) => (
                         //@ts-ignore
                         track.boxes.map((segment: [number, number][], idx: number) => (
                             <Polyline

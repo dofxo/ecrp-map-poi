@@ -4,7 +4,16 @@ import {PlusOutlined} from "@ant-design/icons";
 import Filter from "./Filter.tsx";
 import {handleExportFullMap} from "../helper/handleExportFullMap.ts";
 
-const Header = ({gangs, isClick, setIsClick, setShowTerritory, setShowDropPoints, setFilteredGangs, setIsNaming}: {
+const Header = ({
+                    gangs,
+                    isClick,
+                    setIsClick,
+                    setShowTerritory,
+                    setShowRaceTracks,
+                    setShowDropPoints,
+                    setFilteredGangs,
+                    setIsNaming
+                }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
     setShowTerritory: React.Dispatch<React.SetStateAction<boolean>>
@@ -13,6 +22,7 @@ const Header = ({gangs, isClick, setIsClick, setShowTerritory, setShowDropPoints
     gangs: any[]
     setFilteredGangs: React.Dispatch<React.SetStateAction<string>>
     setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
+    setShowRaceTracks: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
 
 
@@ -27,6 +37,10 @@ const Header = ({gangs, isClick, setIsClick, setShowTerritory, setShowDropPoints
                     <div className='flex items-center gap-2'>
                         <Switch size='small' defaultChecked onChange={setShowTerritory}/>
                         <label className="text-[13px]">Territories</label>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                        <Switch size="small" defaultChecked onChange={setShowRaceTracks}/>
+                        <label className="text-[13px]">Race Tracks</label>
                     </div>
                     <div className='flex items-center gap-2'>
                         <Switch size="small" defaultChecked onChange={setShowDropPoints}/>

@@ -26,6 +26,7 @@ const App = () => {
     const [poiList, setPoiList] = useState<Poi[]>([]);
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
     const [showDropPoints, setShowDropPoints] = useState(true);
+    const [showRaceTracks, setShowRaceTracks] = useState(true);
     const [gangs, setGangs] = useState<any[]>([]);
     const [filteredGangs, setFilteredGangs] = useState("all");
 
@@ -135,6 +136,7 @@ const App = () => {
                         gangs={gangs}
                         setFilteredGangs={setFilteredGangs}
                         setIsNaming={setIsAddingTrack}
+                        setShowRaceTracks={setShowRaceTracks}
 
                     />
                     <Map
@@ -143,6 +145,7 @@ const App = () => {
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
                         showTerritory={showTerritory}
+                        showRaceTracks={showRaceTracks}
                         poiList={
                             filteredGangs === "all"
                                 ? poiList
