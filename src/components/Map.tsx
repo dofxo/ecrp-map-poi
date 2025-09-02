@@ -1,5 +1,5 @@
-import {useRef, useState} from 'react';
-import {ImageOverlay, MapContainer, Marker, Popup, useMapEvents} from 'react-leaflet';
+import {useEffect, useRef, useState} from 'react';
+import {ImageOverlay, MapContainer, Marker, Polyline, Popup, useMapEvents} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import toast from "react-hot-toast";
 import {Button, Input, Modal, Select} from "antd";
@@ -10,6 +10,7 @@ import Territories from "./Territory.tsx";
 import {supabase} from "../config/supabase.ts";
 import {webhook} from "../data/webhook.ts";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import RaceTrackControl from "./RaceTrackControl";
 
 interface NewPOIState {
     poiName: string;
@@ -36,6 +37,9 @@ const Map = ({
                  showDropPoints,
                  filteredGangs,
                  gangs,
+                 isNaming,
+                 setIsNaming,
+                 showRaceTracks
              }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
@@ -46,7 +50,66 @@ const Map = ({
     showDropPoints: boolean
     filteredGangs: string
     gangs: any[]
+    setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
+    isNaming: boolean
+    showRaceTracks: boolean
 }) => {
+
+    const mapRef = useRef<any>(null);
+
+    //@ts-ignore
+    const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+    const [tracks, setTracks] = useState<
+        { id: string; name: string; boxes: [number, number][], addedBy: string, color: string }[]
+    >([]);
+
+    useEffect(() => {
+        if (!mapRef.current) return
+        mapRef.current.fitBounds(bounds, {padding: [0, 0]});
+        setMapInstance(mapRef.current);
+    }, [mapRef.current]);
+
+    useEffect(() => {
+        (async () => {
+            const {data, error} = await supabase.from('raceTracks').select();
+            if (error) throw error;
+            setTracks(data);
+        })()
+    }, []);
+
+    const [isDeleteTrackModalOpen, setIsDeleteTrackModalOpen] = useState(false);
+    const [trackId, setTrackId] = useState<string | null>(null);
+    const [trackDeletePw, setTrackDeletePw] = useState("");
+
+// Delete Track handler
+    const handleDeleteTrack = async () => {
+        const {data: pw} = await supabase.from("pw").select("pw");
+        setIsDeleting(true);
+
+        //@ts-ignore
+        if (pw[0].pw !== trackDeletePw) {
+            setTrackDeletePw("");
+            setIsDeleting(false);
+            return toast.error("Incorrect password");
+        }
+
+        try {
+            const trackToDelete = tracks.find((t) => t.id === trackId);
+            if (!trackToDelete) throw new Error("Track not found");
+
+            await supabase.from("raceTracks").delete().eq("id", trackId);
+
+            setTracks(tracks.filter((t) => t.id !== trackId));
+            toast.success("Track removed!");
+            setIsDeleteTrackModalOpen(false);
+            setTrackId(null);
+        } catch {
+            toast.error("Error deleting track");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
 
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -61,7 +124,6 @@ const Map = ({
         poiGang: "",
     });
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const mapRef = useRef<any>(null);
 
     const [{poiName, poiType, adderName, latLng, poiGang}, setNewPOI] = useState<NewPOIState>({
         adderName: "",
@@ -363,7 +425,7 @@ const Map = ({
                                     {(poi.poiType !== "dropPoints" || isDevMode) && (
                                         <div className="flex gap-2">
                                             <Button className="text-sm w-full" type="primary"
-                                                    onClick={() => showEditModal(poi)} icon={<EditOutlined />}>
+                                                    onClick={() => showEditModal(poi)} icon={<EditOutlined/>}>
                                                 Edit poi
                                             </Button>
                                             <Button className="text-sm w-full" type="primary" danger
@@ -372,7 +434,7 @@ const Map = ({
                                                         setPoiId(poi.id);
                                                         showDeleteModal();
                                                     }}
-                                                    icon={<DeleteOutlined />}>
+                                                    icon={<DeleteOutlined/>}>
                                                 Remove poi
                                             </Button>
                                         </div>
@@ -398,6 +460,9 @@ const Map = ({
             overflow: 'hidden'
         }}>
             <div style={{width: '100%', height: '85vh'}}>
+                {mapInstance && <RaceTrackControl isNaming={isNaming} setIsNaming={setIsNaming} map={mapInstance}
+                                                  setTracks={setTracks}/>}
+
                 <MapContainer
                     ref={mapRef}
                     //@ts-ignore
@@ -410,16 +475,43 @@ const Map = ({
                     style={{height: '100%', width: '100%'}}
                     maxBounds={bounds}
                     maxBoundsViscosity={1.0}
-                    //@ts-ignore
-                    whenCreated={(mapInstance) => {
-                        mapInstance.fitBounds(bounds, {padding: [0, 0]});
-                    }}
                     id='map'
+
                 >
                     <ImageOverlay url={imageUrl} bounds={bounds}/>
                     <MapClickHandler/>
                     <PoiMarkers/>
                     {showTerritory && <Territories filteredGangs={filteredGangs} isDevMode={isDevMode}/>}
+
+                    {showRaceTracks && tracks.map((track) => (
+                        //@ts-ignore
+                        track.boxes.map((segment: [number, number][], idx: number) => (
+                            <Polyline
+                                key={`${track.id}-${idx}`}
+                                positions={segment}
+                                pathOptions={{color: track.color, weight: 3}}
+                            >
+                                <Popup>
+                                    <div className="flex gap-2 flex-col p-2">
+                                        <span><span className="font-bold">Track Name: </span>{track.name}</span>
+                                        <span><span className="font-bold">Added by: </span>{track.addedBy}</span>
+
+                                        <Button
+                                            type="primary"
+                                            danger
+                                            icon={<DeleteOutlined/>}
+                                            onClick={() => {
+                                                setTrackId(track.id);
+                                                setIsDeleteTrackModalOpen(true);
+                                            }}
+                                        >
+                                            Remove track
+                                        </Button>
+                                    </div>
+                                </Popup>
+                            </Polyline>
+                        ))
+                    ))}
                 </MapContainer>
 
                 {/* Add POI Modal */}
@@ -470,7 +562,8 @@ const Map = ({
                                         .map(key => ({
                                             value: key,
                                             label: <span className='flex items-center gap-2'>
-                                                    <img src={poiTypes[key]?.icon} className='emoji-marker !max-w-[20px]'/>
+                                                    <img src={poiTypes[key]?.icon}
+                                                         className='emoji-marker !max-w-[20px]'/>
                                                     <span>{poiTypes[key].name}</span>
                                                 </span>
                                         }))}
@@ -556,7 +649,8 @@ const Map = ({
                                             .map(key => ({
                                                 value: key,
                                                 label: <span className='flex items-center gap-2'>
-                                                    <img src={poiTypes[key]?.icon} className='emoji-marker !max-w-[20px]'/>
+                                                    <img src={poiTypes[key]?.icon}
+                                                         className='emoji-marker !max-w-[20px]'/>
                                                     <span>{poiTypes[key].name}</span>
                                                 </span>
 
@@ -567,6 +661,34 @@ const Map = ({
                         </div>
                     )}
                 </Modal>
+
+                {/* Delete Track Modal */}
+                <Modal
+                    title="Confirm Delete Track"
+                    open={isDeleteTrackModalOpen}
+                    onOk={handleDeleteTrack}
+                    onCancel={() => setIsDeleteTrackModalOpen(false)}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{danger: true, loading: isDeleting}}
+                >
+                    <p>Are you sure you want to delete this track?</p>
+                    {trackId !== null && (
+                        <div className="mt-4 p-2 bg-gray-100 rounded flex flex-col gap-5">
+                            <p><strong>Name:</strong> {tracks.find(t => t.id === trackId)?.name}</p>
+                            <p className="flex items-center gap-2">
+                                <strong>Password:</strong>
+                                <Input
+                                    type="password"
+                                    value={trackDeletePw}
+                                    onChange={(e) => setTrackDeletePw(e.target.value)}
+                                    placeholder="Enter password"
+                                />
+                            </p>
+                        </div>
+                    )}
+                </Modal>
+
             </div>
         </div>
     );

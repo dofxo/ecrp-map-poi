@@ -21,10 +21,12 @@ const isDevMode = import.meta.env.MODE === "development";
 
 const App = () => {
     const [isClick, setIsClick] = useState(false);
+    const [isAddingTrack, setIsAddingTrack] = useState(false);
     //@ts-ignore
     const [poiList, setPoiList] = useState<Poi[]>([]);
     const [showTerritory, setShowTerritory] = useState<boolean>(true);
     const [showDropPoints, setShowDropPoints] = useState(true);
+    const [showRaceTracks, setShowRaceTracks] = useState(true);
     const [gangs, setGangs] = useState<any[]>([]);
     const [filteredGangs, setFilteredGangs] = useState("all");
 
@@ -133,6 +135,9 @@ const App = () => {
                         isClick={isClick}
                         gangs={gangs}
                         setFilteredGangs={setFilteredGangs}
+                        setIsNaming={setIsAddingTrack}
+                        setShowRaceTracks={setShowRaceTracks}
+
                     />
                     <Map
                         gangs={gangs}
@@ -140,6 +145,7 @@ const App = () => {
                         showDropPoints={showDropPoints}
                         isDevMode={isDevMode}
                         showTerritory={showTerritory}
+                        showRaceTracks={showRaceTracks}
                         poiList={
                             filteredGangs === "all"
                                 ? poiList
@@ -148,6 +154,8 @@ const App = () => {
                         setPoiList={setPoiList}
                         setIsClick={setIsClick}
                         isClick={isClick}
+                        setIsNaming={setIsAddingTrack}
+                        isNaming={isAddingTrack}
                     />
                 </main>
             )}

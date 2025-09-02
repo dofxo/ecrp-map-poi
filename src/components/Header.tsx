@@ -4,7 +4,16 @@ import {PlusOutlined} from "@ant-design/icons";
 import Filter from "./Filter.tsx";
 import {handleExportFullMap} from "../helper/handleExportFullMap.ts";
 
-const Header = ({gangs, isClick, setIsClick,setShowTerritory, setShowDropPoints, setFilteredGangs}: {
+const Header = ({
+                    gangs,
+                    isClick,
+                    setIsClick,
+                    setShowTerritory,
+                    setShowRaceTracks,
+                    setShowDropPoints,
+                    setFilteredGangs,
+                    setIsNaming
+                }: {
     isClick: boolean,
     setIsClick: React.Dispatch<React.SetStateAction<boolean>>
     setShowTerritory: React.Dispatch<React.SetStateAction<boolean>>
@@ -12,7 +21,8 @@ const Header = ({gangs, isClick, setIsClick,setShowTerritory, setShowDropPoints,
     setShowDropPoints: React.Dispatch<React.SetStateAction<boolean>>
     gangs: any[]
     setFilteredGangs: React.Dispatch<React.SetStateAction<string>>
-
+    setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
+    setShowRaceTracks: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
 
 
@@ -29,13 +39,17 @@ const Header = ({gangs, isClick, setIsClick,setShowTerritory, setShowDropPoints,
                         <label className="text-[13px]">Territories</label>
                     </div>
                     <div className='flex items-center gap-2'>
+                        <Switch size="small" defaultChecked onChange={setShowRaceTracks}/>
+                        <label className="text-[13px]">Race Tracks</label>
+                    </div>
+                    <div className='flex items-center gap-2'>
                         <Switch size="small" defaultChecked onChange={setShowDropPoints}/>
                         <label className="text-[13px]">Drop points</label>
                     </div>
 
                 </div>
 
-                <Filter gangs={gangs}  setFilteredGangs={setFilteredGangs}/>
+                <Filter gangs={gangs} setFilteredGangs={setFilteredGangs}/>
 
             </div>
             <div className="flex flex-col gap-2 justify-between">
@@ -51,6 +65,10 @@ const Header = ({gangs, isClick, setIsClick,setShowTerritory, setShowDropPoints,
                     );
                     setIsClick(true)
                 }}>{!isClick ? "Add new POI" : "Click on the map"}</Button>
+                <Button type="primary" icon={<PlusOutlined/>} onClick={() => setIsNaming(true)}>
+                    Add New Race Track
+                </Button>
+
 
                 <Button type="primary" onClick={handleExportFullMap}>
                     📸 Export Visible Map Area
