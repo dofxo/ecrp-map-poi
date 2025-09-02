@@ -134,7 +134,7 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             map.removeLayer(lastPolyline);
         }
 
-        toast("Last segment removed", {icon: "↩️"});
+        toast("Last segment removed", {icon: <RedoOutlined/>});
     };
 
     const submitTrack = async () => {
