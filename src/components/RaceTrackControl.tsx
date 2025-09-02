@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { CheckOutlined, EditOutlined } from "@ant-design/icons";
+import {CheckOutlined, EditOutlined, RedoOutlined} from "@ant-design/icons";
 import { supabase } from "../config/supabase.ts";
 import { Button, Modal, Form, Input, ColorPicker, Alert } from "antd";
 
@@ -12,7 +12,7 @@ interface RaceTrackControlProps {
             {
                 id: string;
                 name: string;
-                boxes: [number, number][];
+                boxes: [number, number][][];
                 addedBy: string;
                 color: string;
             }[]
@@ -44,6 +44,8 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
     const currentPolylineRef = useRef<L.Polyline | null>(null);
     const currentPointsRef = useRef<[number, number][]>([]);
     const tracksBufferRef = useRef<[number, number][][]>([]);
+    //@ts-ignore
+    const finishedPolylinesRef = useRef<L.Polyline[]>([]);
 
     // open modal automatically when isNaming = true
     useEffect(() => {
@@ -75,6 +77,9 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             } else {
                 if (currentPointsRef.current.length > 1) {
                     tracksBufferRef.current.push([...currentPointsRef.current]);
+                    if (currentPolylineRef.current) {
+                        finishedPolylinesRef.current.push(currentPolylineRef.current);
+                    }
                     toast.success(`Track finished!`);
                 }
                 setIsDrawing(false);
@@ -117,6 +122,23 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             .catch(() => {});
     };
 
+    const undoLastSegment = () => {
+        if (!tracksBufferRef.current.length) {
+            return toast.error("No segments to undo");
+        }
+
+        // remove last track from buffer
+        tracksBufferRef.current.pop();
+
+        // remove last polyline from map
+        const lastPolyline = finishedPolylinesRef.current.pop();
+        if (lastPolyline && map) {
+            map.removeLayer(lastPolyline);
+        }
+
+        toast("Last segment removed", { icon: "↩️" });
+    };
+
     const submitTrack = async () => {
         if (!tracksBufferRef.current.length) {
             return toast.error("No tracks drawn");
@@ -149,6 +171,8 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             // reset refs
             tracksBufferRef.current = [];
             currentPointsRef.current = [];
+            finishedPolylinesRef.current.forEach((poly) => map?.removeLayer(poly));
+            finishedPolylinesRef.current = [];
             if (currentPolylineRef.current) {
                 map?.removeLayer(currentPolylineRef.current);
                 currentPolylineRef.current = null;
@@ -216,6 +240,16 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                                     Click again to stop.
                                     Repeat to add more segments.
                                 </p>
+                                <Button
+                                    type="default"
+                                    onClick={undoLastSegment}
+                                    block
+                                    icon={<RedoOutlined />}
+                                    style={{ marginBottom: 8 }}
+                                    danger
+                                >
+                                    Undo Last Segment
+                                </Button>
                                 <Button
                                     type="primary"
                                     icon={<CheckOutlined />}
