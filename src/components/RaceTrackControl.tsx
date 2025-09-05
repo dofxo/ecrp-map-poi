@@ -3,28 +3,19 @@ import toast from "react-hot-toast";
 import {CheckOutlined, EditOutlined, RedoOutlined} from "@ant-design/icons";
 import {supabase} from "../config/supabase.ts";
 import {Alert, Button, ColorPicker, Form, Input, Modal} from "antd";
+import {useAppStore} from "../store.ts";
 
 interface RaceTrackControlProps {
     //@ts-ignore
-    map: L.Map | null; // Leaflet map instance
-    setTracks:
-        React.Dispatch<React.SetStateAction<{
-            id: string
-            name: string
-            boxes: [number, number][]
-            addedBy: string
-            color: string
-        }[]>>
-    setIsNaming: React.Dispatch<React.SetStateAction<boolean>>;
-    isNaming: boolean;
+    map: L.Map | null;
 }
 
 const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
-                                                               isNaming,
-                                                               setIsNaming,
                                                                map,
-                                                               setTracks,
                                                            }) => {
+
+    const {isAddingTrack, setIsAddingTrack, setTracks} = useAppStore();
+
     const [isDrawing, setIsDrawing] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -46,10 +37,10 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
 
     // open modal automatically when isNaming = true
     useEffect(() => {
-        if (isNaming) {
+        if (isAddingTrack) {
             setModalOpen(true);
         }
-    }, [isNaming]);
+    }, [isAddingTrack]);
 
     // handle drawing
     useEffect(() => {
@@ -159,7 +150,7 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
 
             toast.success("Track saved!");
             setTrackMeta(null);
-            setIsNaming(false);
+            setIsAddingTrack(false)
             setIsDrawing(false);
         } catch (err) {
             console.error("Error submitting track", err);
@@ -186,7 +177,8 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
                 onOk={handleMetaSubmit}
                 onCancel={() => {
                     setModalOpen(false);
-                    setIsNaming(false);
+                    setIsAddingTrack(false)
+
                 }}
                 okText="Start Drawing"
             >
@@ -219,7 +211,7 @@ const RaceTrackControl: React.FC<RaceTrackControlProps> = ({
             </Modal>
 
             {/* HINT BOX after modal closes */}
-            {isNaming && trackMeta && (
+            {isAddingTrack && trackMeta && (
                 <div
                     style={{
                         position: "absolute",

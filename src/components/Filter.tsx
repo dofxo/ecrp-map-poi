@@ -1,9 +1,11 @@
 import {Select} from "antd";
+import {useAppStore} from "../store.ts";
 
-const Filter = ({gangs,setFilteredGangs}: {
-    gangs: any[],
-    setFilteredGangs: React.Dispatch<React.SetStateAction<string>>
-}) => {
+const Filter = () => {
+    const {
+        gangs,
+        setFilteredGangs,
+    } = useAppStore();
 
     return (
         <div>
