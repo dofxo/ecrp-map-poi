@@ -3,7 +3,6 @@ import {ImageOverlay, MapContainer, Marker, Polyline, Popup, useMapEvents} from 
 import 'leaflet/dist/leaflet.css';
 import toast from "react-hot-toast";
 import {Button, Input, Modal, Select} from "antd";
-import type {Poi} from "../App.tsx";
 import {formatDateDDMMMYYYY} from "../helper/formatDate.ts";
 import {poiTypeKey, poiTypes} from "../data/poiTypes.ts";
 import Territories from "./Territory.tsx";
@@ -11,6 +10,7 @@ import {supabase} from "../config/supabase.ts";
 import {webhook} from "../data/webhook.ts";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import RaceTrackControl from "./RaceTrackControl";
+import {Poi, useAppStore} from "../store.ts";
 
 interface NewPOIState {
     poiName: string;
@@ -27,41 +27,27 @@ interface EditPOIState {
     poiGang: string;
 }
 
-const Map = ({
-                 isClick,
-                 setIsClick,
-                 poiList,
-                 setPoiList,
-                 showTerritory,
-                 isDevMode,
-                 showDropPoints,
-                 filteredGangs,
-                 gangs,
-                 isNaming,
-                 setIsNaming,
-                 showRaceTracks
-             }: {
-    isClick: boolean,
-    setIsClick: React.Dispatch<React.SetStateAction<boolean>>,
-    poiList: Poi[],
-    setPoiList: React.Dispatch<React.SetStateAction<Poi[]>>
-    showTerritory: boolean
-    isDevMode: boolean
-    showDropPoints: boolean
-    filteredGangs: string
-    gangs: any[]
-    setIsNaming: React.Dispatch<React.SetStateAction<boolean>>
-    isNaming: boolean
-    showRaceTracks: boolean
-}) => {
+const Map = ({isDevMode}: { isDevMode: boolean }) => {
+
+    const {
+        setPoiList,
+        gangs,
+        setIsClick,
+        poiList,
+        isClick,
+        showDropPoints,
+        filteredGangs,
+        showTerritory,
+        showRaceTracks,
+        setTracks,
+        tracks
+    } = useAppStore();
+
 
     const mapRef = useRef<any>(null);
 
     //@ts-ignore
     const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
-    const [tracks, setTracks] = useState<
-        { id: string; name: string; boxes: [number, number][], addedBy: string, color: string }[]
-    >([]);
 
     useEffect(() => {
         if (!mapRef.current) return
@@ -245,6 +231,7 @@ const Map = ({
             const {data, error} = await supabase.from('pois').insert([poiDetails]).select();
             if (error) throw error;
 
+            //@ts-ignore
             setPoiList(prev => [...prev, data[0]]);
             setIsModalOpen(false);
             setIsClick(false);
@@ -460,8 +447,7 @@ const Map = ({
             overflow: 'hidden'
         }}>
             <div style={{width: '100%', height: '85vh'}}>
-                {mapInstance && <RaceTrackControl isNaming={isNaming} setIsNaming={setIsNaming} map={mapInstance}
-                                                  setTracks={setTracks}/>}
+                {mapInstance && <RaceTrackControl map={mapInstance}/>}
 
                 <MapContainer
                     ref={mapRef}
