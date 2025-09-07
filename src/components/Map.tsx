@@ -372,7 +372,13 @@ const Map = ({isDevMode}: { isDevMode: boolean }) => {
     };
 
     const PoiMarkers = () => {
-        const filteredPoiList = poiList.filter(poi => poi.poiType === "dropPoints" ? showDropPoints : true);
+        const filteredPoiList = poiList.filter(poi => {
+            if (poi.poiType === "dropPoints") {
+                return showDropPoints;
+            }
+            return filteredGangs === 'all' || +poi.poiGang === +filteredGangs;
+        });
+
         return (
             <>
                 {filteredPoiList.map((poi, index) => {
